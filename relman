@@ -1,0 +1,379 @@
+#!/bin/bash
+###############################################################################
+# RelMan
+#------------------------------------------------------------------------------
+# 
+###############################################################################
+# $Id$
+
+#===============================================[ Setup Script environment ]===
+#------------------------------------[ Read some presets from pkgmake.conf ]---
+if [ -f ~/.pkgmake/pkgmake.conf ]; then
+  . ~/.pkgmake/pkgmake.conf
+elif [ -f /etc/pkgmake/pkgmake.conf ]; then
+  . /etc/pkgmake/pkgmake.conf
+fi
+
+#---------------------------------------------------------------[ Settings ]---
+pkgroot="/usr/src/debian"
+pkgmake=pkgmake
+pkgmakeparms="-q -q"
+release=izzy1
+buildarch=noarch
+mktar=1
+mkdeb=1
+mkrpm=0
+# ftp uses the ~/.netrc file for login information:
+distftp=upload.sourceforge.net
+distftpdir=incoming
+distscp=zion:/web/ftp/net/div/izzysoft/
+debscp=zion:/web/ftp/repo/ubuntu/dists/feisty/universe
+sdebscp=$debscp
+
+BINDIR=${0%/*}				# where this script resides
+. $BINDIR/version			# Get our version number
+dispdetails=1
+dryrun=0
+yestoall=0
+
+#-----------------------------------------------------------------[ Colors ]---
+red='\e[0;31m'
+blue='\e[0;34m'
+blink='\E[5m'
+NC='\e[0m'              # No Color
+
+#----------------------------------------------[ Read config file (if any) ]---
+if [ -f ~/.relmanrc ]; then
+  . ~/.relmanrc
+elif [ -f /etc/relman.conf ]; then
+  . /etc/relman.conf
+fi
+
+. ./relman.conf
+
+#-------------------------------------------[ process command line options ]---
+typeset -i SILENT=0
+[ "${1:0:1}" != "-" ] && PRG=$1
+[ "${1:0:1}" != "-" ] && version=$2
+
+while [ "$1" != "" ] ; do
+  case "$1" in
+    -dryrun) dryrun=1;;
+    -deb) _mkdeb=1;;
+    -nodeb) _mkdeb=0; _debscp=0;;
+    -nodist) _distscp=0; _distftp=0; _debscp=0; _sdebscp=0;;
+    -noftp) _distftp=0;;
+    -norpm) _mkrpm=0;;
+    -noscp) _distscp=0;;
+    -nodebscp) _debscp=0;;
+    -notar) _mktar=0;;
+    -p) shift; _pkgmakeparms="${_pkgmakeparms} $1";;
+    -q) let SILENT=$SILENT+1;;
+    -r) shift; release=$1;;
+    -rpm) _mkrpm=1;;
+    -t) shift; _spectpl="${BUILDDEB}/SPECS/$1";;
+    -y) yestoall=1;;
+  esac
+  shift
+done
+
+function getopts {
+  [ -n "${_mkdeb}" ] && mkdeb=${_mkdeb}
+  [ -n "${_mkrpm}" ] && mkrpm=${_mkrpm}
+  [ -n "${_mktar}" ] && mktar=${_mktar}
+  [ "${_debscp}" = "0" ] && debscp=""
+  [ "${_distftp}" = "0" ] && distftp=""
+  [ "${_distscp}" = "0" ] && distscp=""
+  [ "${_sdebscp}" = "0" ] && sdebscp=""
+  [ -n "${_pkgmakeparms}" ] && pkgmakeparms=${_pkgmakeparms}
+  [ -n "${_spectpl}" ] && spectpl=${_spectpl}
+}
+
+#-----------------------------------------------[ Show progress (or don't) ]---
+function say {
+  [ $SILENT -lt 3 ] && echo -e "$1"
+}
+
+#------------------[ Read one char user input and convert it to lower case ]---
+function yesno {
+  read -n 1 -p "" ready
+  echo
+  res=`echo $ready|tr [:upper:] [:lower:]`
+}
+
+function stayorgo {
+  [ "$res" != "y" ] && {
+    echo "* Process canceled."
+    exit 0
+  }
+  echo
+}
+
+#---------------------------------------------------[ Output script header ]---
+function header {
+  [ $SILENT -lt 3 ] && clear
+  say "${blue}relman v${RELMANV}"
+  say "-------------"
+  say
+}
+
+#---------------------------------------[ Ask Parm vals ($1/$2 not passed) ]---
+function getname {
+  echo -en "${blue}Enter package name:$NC "
+  read PRG
+  [ ${PRG:0:1} = "-" ] && {
+    echo -e "${red}Package name may not start with a \"-\" sign. Try again.$NC"
+    getname
+  }
+}
+
+function getversion {
+  echo -en "${blue}Enter version:$NC "
+  read version
+  [ ${PRG:0:1} = "-" ] && {
+    echo -e "${red}Version number may not start with a \"-\" sign. Try again.$NC"
+    getversion
+  }
+}
+
+function getparam {
+  echo -en "${blue}$1:$NC "
+  read param
+}
+
+function yesno12 {
+  echo -en "${blue}$1 (y/n)?$NC "
+  read -n 1 ready
+  [ -z "$ready" ] && ready=n
+  echo
+  res=`echo $ready|tr [:upper:] [:lower:]`
+  if [ $res = "y" ]; then param=1
+  else param=0; fi
+}
+
+#------------------------------------------------------[ Evaluate Settings ]--
+function getprogcfg {
+  eval prog=\$"${PRG}_name"
+  [ -z "$prog" ] && prog=$PRG
+  eval srcdir=\$"${PRG}_srcdir"
+  [ -z "$srcdir" ] && srcdir="${pkgroot}/BUILD/${prog}-${version}"
+  eval spectpl=\$"${PRG}_spectpl"
+  eval ba=\$"${PRG}_buildarch"
+  [ -n "$ba" ] && buildarch=$ba
+  eval ba=\$"${PRG}_mktar"
+  [ -n "$ba" ] && mktar=$ba
+  eval ba=\$"${PRG}_mkdeb"
+  [ -n "$ba" ] && mkdeb=$ba
+  eval ba=\$"${PRG}_mkrpm"
+  [ -n "$ba" ] && mkrpm=$ba
+  eval ba=\$"${PRG}_distftp"
+  [ -n "$ba" ] && distftp=$ba
+  eval ba=\$"${PRG}_distscp"
+  [ -n "$ba" ] && distscp=$ba
+  eval group=\$"${PRG}_group"
+  eval section=\$"${PRG}_section"
+  eval prerun=\$"${PRG}_pre"
+}
+
+#----------------------------------------------------------[ Run a command ]---
+function runcmd {
+  if [ $dryrun -eq 0 ]; then
+    $1
+  else
+    echo -e "${blue}- Exec:$NC $1"
+  fi
+}
+
+#------------------------------------------------------------------[ Exits ]---
+function finito {
+  say "${blue}* Done.$NC"
+  say
+  exit
+}
+
+#------------------------------------------------------[ Check for pkgmake ]---
+if [ -f /etc/pkgmake/version ]; then
+  . /etc/pkgmake/version
+else
+  header
+  say "${red}Could not find the pkgmake config in /etc/pkgmake/$NC"
+  say
+  say "${blue}Looks like pkgmake is not installed, or a version prior to 0.1.4 is"
+  say "used. Please install (or update to) the latest version of pkgmake; without"
+  say "that there's nothing I can do."
+  say "More information can be obtained at http://www.izzysoft.de/?topic=software$NC"
+  say
+  finito
+fi
+
+#======================================================[ Interactive Start ]===
+header
+
+[ -z "$PRG" ] && getname
+
+getprogcfg
+getopts $args
+
+[ -z "$version" ] && {
+  getversion
+  # If the entered package is not configured, $srcdir must be reconfigured:
+    typeset -i chars=${#srcdir}
+    let chars=$chars-1
+    [ "${srcdir:$chars}" = "-" ] && srcdir="${pkgroot}/BUILD/${prog}-${version}"
+  getparam "Source Directory ($srcdir)"
+  [ -n "$param" ] && srcdir=$param
+  yesno12 "Create Tar from Source Directory"
+  mktar=$param
+  getparam "Release ($release)"
+  [ -n "$param" ] && release=$param
+  getparam "Build Architecture ($buildarch)"
+  [ -n "$param" ] && buildarch=$param
+  yesno12 "Make Debian package"
+  mkdeb=$param
+  yesno12 "Make RPM package"
+  mkrpm=$param
+  [ $mkrpm -o $mkdeb ] && {
+    getparam "Spec Template to use (${prog}.tpl)"
+    [ -n "$param" ] && spectpl="$param"
+  }
+  yesno12 "Upload to SourceForge"
+  [ $param -eq 0 ] && distftp=""
+  yesno12 "Distribute via SSH"
+  [ $param -eq 0 ] && distscp=""
+  yesno12 "Distribute *.deb via SSH"
+  [ $param -eq 0 ] && debscp=""
+  getparam "Extra parameters to pkgmake"
+  pkgmakeparms=$param
+  dispdetails=1
+}
+
+[ -n "$prerun" ] && {
+  prerun=`echo $prerun|sed "s/%p/$prog/"|sed "s/%v/$version/"`
+}
+
+#=====================================================[ Processing Package ]===
+#-----------------------[ Input verification (only when called w/o params) ]---
+[ $dispdetails -eq 1 ] && {
+  echo -e "${blue}Processing the following details:$NC"
+  echo " Program                : $prog"
+  echo " Version                : $version"
+  echo " Release                : $release"
+  echo " Source Dir             : $srcdir"
+  echo " Create Tar             : $mktar"
+  echo " BuildArch              : $buildarch"
+  echo " Debian Package         : $mkdeb"
+  echo " RPM                    : $mkrpm"
+  echo -n " Spec Template          : "
+  if [ -z "$spectpl" ]; then echo "${BUILDDEB}/SPECS/${prog}.tpl"
+  else echo $spectpl; fi
+  echo " RPM Group              : $group"
+  echo " DEB section            : $section"
+  echo " FTP Distribution to    : $distftp"
+  echo " SSH Distribution to    : $distscp"
+  echo " DEB Distribution (SSH) : $debscp"
+  echo " PreRun script          : $prerun"
+  echo " Extra parms to pkgmake : $pkgmakeparms"
+  echo " dryrun                 : $dryrun"
+  [ $yestoall -eq 0 ] && {
+    echo -en "${blue}Continue (y/n)? $NC"
+    yesno
+    stayorgo
+  }
+  say
+}
+
+say "Preparing ${prog} v${version} for release:${NC}"
+
+#-----------------------------------------[ Calling PreRun script (if any) ]---
+[ -n "$prerun" ] && {
+  say "${blue}* Running pre-processing script: $prerun"
+  runcmd "$prerun"
+}
+
+#--------------------------------------------------------[ Calling pkgmake ]---
+export PKGMAKE_USED="relman v${RELMANV}"
+[ "${mkdeb}${mkrpm}" != "00" ] && {
+  say "${blue}* Calling pkgmake$NC"
+  cmd="$pkgmake $prog $version -r $release -b $buildarch -t $spectpl $pkgmakeparms"
+  if [ $mktar -gt 0 ]; then cmd="$cmd -d $srcdir"; else cmd="$cmd -notar"; fi
+  if [ $mkdeb -gt 0 ]; then cmd="$cmd -deb"; else cmd="$cmd -nodeb"; fi
+  if [ $mkrpm -gt 0 ]; then cmd="$cmd -rpm"; else cmd="$cmd -norpm"; fi
+  [ -n "$group" ] && cmd="$cmd -g \"$group\""
+  [ -n "$section" ] && cmd="$cmd -section \"$section\""
+  runcmd "$cmd"
+}
+
+#------------------------------------------------------------[ Continue??? ]---
+[ -z "${distscp}${distftp}${debscp}${sdebscp}" ] && finito
+
+[ $yestoall -eq 0 ] && {
+  echo -en "${blue}* Going to distribute. Continue (y/n)?$NC "
+  yesno
+  stayorgo
+}
+
+tarfile=${pkgroot}/SOURCES/${prog}-${version}.tar.gz
+
+#---------------------------------------------------------------[ Dist FTP ]---
+[ -n "$distftp" ] && {
+  say "${blue}* Distributing Tar via FTP$NC"
+  if [ -e $tarfile ]; then
+    ftptmp=/tmp/ftp.$$
+    touch $ftptmp
+    echo "open $distftp">$ftptmp
+    echo "hash" >>$ftptmp
+    echo "bin" >>$ftptmp
+    echo "cd $distftpdir" >>$ftptmp
+    echo "lcd ${pkgroot}/SOURCES" >>$ftptmp
+    echo "put ${prog}-${version}.tar.gz" >>$ftptmp
+    echo "bye" >>$ftptmp
+    if [ $dryrun -eq 0 ]; then
+      ftp <$ftptmp
+    else
+      runcmd "ftp <$ftptmp"
+    fi
+    rm $ftptmp
+  else
+    echo -e "${red}- Tar file $tarfile not found, cannot distribute it.$NC"
+  fi
+}
+
+#---------------------------------------------------------------[ Dist SCP ]---
+[ -n "$distscp" ] && {
+  say "${blue}* Distributing Tar via SCP$NC"
+  if [ -f $tarfile ]; then
+    runcmd "scp $tarfile $distscp"
+  else
+    echo -e "${red}- Tar file $tarfile not found, cannot distribute it.$NC"
+  fi
+}
+
+#-------------------------------------------------------[ DEB Dist via SSH ]---
+[ -n "$debscp" ] && {
+  say "${blue}* Distributing *.deb via SCP$NC"
+  debfile="${pkgroot}/DEBS";
+  debname="${prog}_${version}-${release}"
+  case $buildarch in
+    "noarch") debfile="${debfile}/all/${debname}_all.deb"; debtarget="${debscp}/binary-all/";;
+    *) debfile="${debfile}/${buildarch}/${debname}_${buildarch}.deb"; debtarget="${debscp}/binary-${buildarch}/";;
+  esac
+  if [ -f $debfile ]; then
+    runcmd "scp $debfile $debtarget"
+  else
+    echo -e "${red}- Debian package $debfile not found, cannot distribute it.$NC"
+  fi
+}
+
+[ -n "$sdebscp" ] && {
+  say "${blue}* Distributing *.sdeb via SCP$NC"
+  debfile="${pkgroot}/SDEBS/${prog}-${version}-${release}.sdeb";
+  debtarget="${debscp}/sources/"
+  if [ -f $debfile ]; then
+    runcmd "scp $debfile $debtarget"
+  else
+    echo -e "${red}- Debian source package $debfile not found, cannot distribute it.$NC"
+  fi
+}
+
+#----------------------------------------------------------[ Finished work ]---
+finito
