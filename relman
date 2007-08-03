@@ -24,11 +24,21 @@ mktar=1
 mkdeb=1
 mkrpm=0
 # ftp uses the ~/.netrc file for login information:
-distftp=upload.sourceforge.net
-distftpdir=incoming
-distscp=zion:/web/ftp/net/div/izzysoft/
-debscp=zion:/web/ftp/repo/ubuntu/dists/feisty/universe
-sdebscp=$debscp
+tarftp=upload.sourceforge.net
+tarftpdir=incoming
+tarscp=
+debftp=
+debftpdir=
+debscp=
+sdebftp=
+sdebftpdir=
+sdebscp=
+rpmftp=
+rpmftpdir=
+rpmscp=
+srpmftpdir=
+srpmftp=
+srpmscp=
 
 BINDIR=${0%/*}				# where this script resides
 . $BINDIR/version			# Get our version number
@@ -61,10 +71,10 @@ while [ "$1" != "" ] ; do
     -dryrun) dryrun=1;;
     -deb) _mkdeb=1;;
     -nodeb) _mkdeb=0; _debscp=0;;
-    -nodist) _distscp=0; _distftp=0; _debscp=0; _sdebscp=0;;
-    -noftp) _distftp=0;;
+    -nodist) _tarscp=0; _tarftp=0; _debscp=0; _sdebscp=0;;
+    -noftp) _tarftp=0;;
     -norpm) _mkrpm=0;;
-    -noscp) _distscp=0;;
+    -noscp) _tarscp=0;;
     -nodebscp) _debscp=0;;
     -notar) _mktar=0;;
     -p) shift; _pkgmakeparms="${_pkgmakeparms} $1";;
@@ -82,8 +92,8 @@ function getopts {
   [ -n "${_mkrpm}" ] && mkrpm=${_mkrpm}
   [ -n "${_mktar}" ] && mktar=${_mktar}
   [ "${_debscp}" = "0" ] && debscp=""
-  [ "${_distftp}" = "0" ] && distftp=""
-  [ "${_distscp}" = "0" ] && distscp=""
+  [ "${_tarftp}" = "0" ] && tarftp=""
+  [ "${_tarscp}" = "0" ] && tarscp=""
   [ "${_sdebscp}" = "0" ] && sdebscp=""
   [ -n "${_pkgmakeparms}" ] && pkgmakeparms=${_pkgmakeparms}
   [ -n "${_spectpl}" ] && spectpl=${_spectpl}
@@ -158,21 +168,18 @@ function getprogcfg {
   eval srcdir=\$"${PRG}_srcdir"
   [ -z "$srcdir" ] && srcdir="${pkgroot}/BUILD/${prog}-${version}"
   eval spectpl=\$"${PRG}_spectpl"
-  eval ba=\$"${PRG}_buildarch"
-  [ -n "$ba" ] && buildarch=$ba
-  eval ba=\$"${PRG}_mktar"
-  [ -n "$ba" ] && mktar=$ba
-  eval ba=\$"${PRG}_mkdeb"
-  [ -n "$ba" ] && mkdeb=$ba
-  eval ba=\$"${PRG}_mkrpm"
-  [ -n "$ba" ] && mkrpm=$ba
-  eval ba=\$"${PRG}_distftp"
-  [ -n "$ba" ] && distftp=$ba
-  eval ba=\$"${PRG}_distscp"
-  [ -n "$ba" ] && distscp=$ba
+  for varname in buildarch tarftpdir debftpdir sdebftpdir rpmftpdir srpmftpdir mktar mkdeb mkrpm; do
+    eval ba=\$"${PRG}_${varname}"
+    [ -n "$ba" ] && eval ${varname}=$ba
+  done
   eval group=\$"${PRG}_group"
   eval section=\$"${PRG}_section"
   eval prerun=\$"${PRG}_pre"
+  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmftp; do
+    eval ba=\$"${PRG}_${varname}"
+    [ -n "$ba" ] && eval ${varname}=$ba
+    [ "${!varname}" = "0" ] && eval ${varname}=""
+  done
 }
 
 #----------------------------------------------------------[ Run a command ]---
@@ -181,6 +188,48 @@ function runcmd {
     eval $1
   else
     echo -e "${blue}- Exec:$NC $1"
+  fi
+}
+
+#---------------------------------------------------------------[ FTP XFer ]---
+# $1 : Type (for display, e.g. "Tar" or "RPM")
+# $2 : Server (e.g. ftp.sourceforge.net)
+# $3 : Server Directory (e.g. incoming)
+# $4 : Local Directory
+# $5 : File name
+function ftpxfer {
+  say "${blue}* Distributing $1 via FTP$NC"
+  if [ -e $tarfile ]; then
+    ftptmp=/tmp/ftp.$$
+    touch $ftptmp
+    echo "open $2">$ftptmp
+    echo "hash" >>$ftptmp
+    echo "bin" >>$ftptmp
+    echo "cd $3" >>$ftptmp
+    echo "lcd $4" >>$ftptmp
+    echo "put $5" >>$ftptmp
+    echo "bye" >>$ftptmp
+    if [ $dryrun -eq 0 ]; then
+      ftp <$ftptmp
+    else
+      runcmd "ftp <$ftptmp"
+    fi
+    rm $ftptmp
+  else
+    echo -e "${red}- $1 file $5 not found, cannot distribute it.$NC"
+  fi
+}
+
+#---------------------------------------------------------------[ SCP XFer ]---
+# $1 : Type (for display, e.g. "Tar" or "RPM")
+# $2 : Source
+# $3 : Target
+function scpxfer {
+  say "${blue}* Distributing $1 via SCP$NC"
+  if [ -f $2 ]; then
+    runcmd "scp $2 $3"
+  else
+    echo -e "${red}- $1 file $2 not found, cannot distribute it.$NC"
   fi
 }
 
@@ -237,9 +286,9 @@ getopts $args
     [ -n "$param" ] && spectpl="$param"
   }
   yesno12 "Upload to SourceForge"
-  [ $param -eq 0 ] && distftp=""
+  [ $param -eq 0 ] && tarftp=""
   yesno12 "Distribute via SSH"
-  [ $param -eq 0 ] && distscp=""
+  [ $param -eq 0 ] && tarscp=""
   yesno12 "Distribute *.deb via SSH"
   [ $param -eq 0 ] && debscp=""
   getparam "Extra parameters to pkgmake"
@@ -268,9 +317,16 @@ getopts $args
   else echo $spectpl; fi
   echo " RPM Group              : $group"
   echo " DEB section            : $section"
-  echo " FTP Distribution to    : $distftp"
-  echo " SSH Distribution to    : $distscp"
+  echo " FTP Distribution to    : $tarftp"
+  echo " SSH Distribution to    : $tarscp"
+  echo " DEB Distribution (FTP) : $debftp"
   echo " DEB Distribution (SSH) : $debscp"
+  echo " SDEB Distribution (FTP): $sdebftp"
+  echo " SDEB Distribution (SSH): $sdebscp"
+  echo " RPM Distribution (FTP) : $rpmftp"
+  echo " RPM Distribution (SSH) : $rpmscp"
+  echo " SRPM Distribution (FTP): $srpmftp"
+  echo " SRPM Distribution (SSH): $srpmscp"
   echo " PreRun script          : $prerun"
   echo " Extra parms to pkgmake : $pkgmakeparms"
   echo " dryrun                 : $dryrun"
@@ -305,7 +361,7 @@ export PKGMAKE_USED="relman v${RELMANV}"
 }
 
 #------------------------------------------------------------[ Continue??? ]---
-[ -z "${distscp}${distftp}${debscp}${sdebscp}" ] && finito
+[ -z "${tarscp}${tarftp}${debscp}${sdebscp}" ] && finito
 
 [ $yestoall -eq 0 ] && {
   echo -en "${blue}* Going to distribute. Continue (y/n)?$NC "
@@ -315,65 +371,39 @@ export PKGMAKE_USED="relman v${RELMANV}"
 
 tarfile=${pkgroot}/SOURCES/${prog}-${version}.tar.gz
 
-#---------------------------------------------------------------[ Dist FTP ]---
-[ -n "$distftp" ] && {
-  say "${blue}* Distributing Tar via FTP$NC"
-  if [ -e $tarfile ]; then
-    ftptmp=/tmp/ftp.$$
-    touch $ftptmp
-    echo "open $distftp">$ftptmp
-    echo "hash" >>$ftptmp
-    echo "bin" >>$ftptmp
-    echo "cd $distftpdir" >>$ftptmp
-    echo "lcd ${pkgroot}/SOURCES" >>$ftptmp
-    echo "put ${prog}-${version}.tar.gz" >>$ftptmp
-    echo "bye" >>$ftptmp
-    if [ $dryrun -eq 0 ]; then
-      ftp <$ftptmp
-    else
-      runcmd "ftp <$ftptmp"
-    fi
-    rm $ftptmp
-  else
-    echo -e "${red}- Tar file $tarfile not found, cannot distribute it.$NC"
-  fi
-}
+#---------------------------------------------------------------[ Tar Dist ]---
+[ -n "$tarftp" ] && ftpxfer "Tar" $tarftp $tarftpdir "${pkgroot}/SOURCES" "${prog}-${version}.tar.gz"
+[ -n "$tarscp" ] && scpxfer "Tar" $tarfile $tarscp
 
-#---------------------------------------------------------------[ Dist SCP ]---
-[ -n "$distscp" ] && {
-  say "${blue}* Distributing Tar via SCP$NC"
-  if [ -f $tarfile ]; then
-    runcmd "scp $tarfile $distscp"
-  else
-    echo -e "${red}- Tar file $tarfile not found, cannot distribute it.$NC"
-  fi
-}
-
-#-------------------------------------------------------[ DEB Dist via SSH ]---
-[ -n "$debscp" ] && {
-  say "${blue}* Distributing *.deb via SCP$NC"
-  debfile="${pkgroot}/DEBS";
+#---------------------------------------------------------------[ DEB Dist ]---
+[ -n "${debscp}${debftp}" ] && {
+  debdir="${pkgroot}/DEBS";
   debname="${prog}_${version}-${release}"
   case $buildarch in
-    "noarch") debfile="${debfile}/all/${debname}_all.deb"; debtarget="${debscp}/binary-all/";;
-    *) debfile="${debfile}/${buildarch}/${debname}_${buildarch}.deb"; debtarget="${debscp}/binary-${buildarch}/";;
+    "noarch") debdir="${debdir}/all"; debfile="${debname}_all.deb"; debtarget="${debscp}/binary-all/";;
+    *) debdir="${debdir}/${buildarch}"; debfile="${debname}_${buildarch}.deb"; debtarget="${debscp}/binary-${buildarch}/";;
   esac
-  if [ -f $debfile ]; then
-    runcmd "scp $debfile $debtarget"
-  else
-    echo -e "${red}- Debian package $debfile not found, cannot distribute it.$NC"
-  fi
+  [ -n "$debftp" ] && ftpxfer "Deb" $debftp $debftpdir $debdir $debfile
+  [ -n "$debscp" ] && scpxfer "Deb" ${debdir}/${debfile} $debtarget
 }
 
-[ -n "$sdebscp" ] && {
-  say "${blue}* Distributing *.sdeb via SCP$NC"
-  debfile="${pkgroot}/SDEBS/${prog}-${version}-${release}.sdeb";
-  debtarget="${debscp}/sources/"
-  if [ -f $debfile ]; then
-    runcmd "scp $debfile $debtarget"
-  else
-    echo -e "${red}- Debian source package $debfile not found, cannot distribute it.$NC"
-  fi
+[ -n "${sdebscp}${sdebftp}" ] && {
+  debdir="${pkgroot}/SDEBS"; debfile="${prog}-${version}-${release}.sdeb";
+  [ -n "$sdebftp" ] && ftpxfer "SDeb" $sdebftp $sdebftpdir $debdir $debfile
+  [ -n "$sdebscp" ] && scpxfer "SDeb" ${debdir}/${debfile} $sdebscp
+}
+
+#---------------------------------------------------------------[ RPM Dist ]---
+[ -n "${rpmscp}${rpmftp}" ] && {
+  rpmdir="${pkgroot}/RPMS/${buildarch}"; rpmfile="${prog}-${version}-${release}.${buildarch}.rpm"
+  [ -n "$rpmftp" ] && ftpxfer "RPM" $rpmftp $rpmftpdir $rpmdir $rpmfile
+  [ -n "$rpmscp" ] && scpxfer "RPM" ${rpmdir}/${rpmfile} $rpmscp
+}
+
+[ -n "${srpmscp}${srpmftp}" ] && {
+  rpmdir="${pkgroot}/SRPMS"; rpmfile="${prog}-${version}-${release}.src.rpm";
+  [ -n "$srpmftp" ] && ftpxfer "SRPM" $srpmftp $srpmftpdir $rpmdir $rpmfile
+  [ -n "$srpmscp" ] && scpxfer "SRPM" ${rpmdir}/${rpmfile} $srpmscp
 }
 
 #----------------------------------------------------------[ Finished work ]---
