@@ -178,7 +178,7 @@ function getprogcfg {
 #----------------------------------------------------------[ Run a command ]---
 function runcmd {
   if [ $dryrun -eq 0 ]; then
-    $1
+    eval $1
   else
     echo -e "${blue}- Exec:$NC $1"
   fi
@@ -294,7 +294,8 @@ say "Preparing ${prog} v${version} for release:${NC}"
 export PKGMAKE_USED="relman v${RELMANV}"
 [ "${mkdeb}${mkrpm}" != "00" ] && {
   say "${blue}* Calling pkgmake$NC"
-  cmd="$pkgmake $prog $version -r $release -b $buildarch -t $spectpl $pkgmakeparms"
+  cmd="$pkgmake $prog $version -r $release -b $buildarch $pkgmakeparms"
+  [ -n "$spectpl" ] && cmd="$cmd -t $spectpl"
   if [ $mktar -gt 0 ]; then cmd="$cmd -d $srcdir"; else cmd="$cmd -notar"; fi
   if [ $mkdeb -gt 0 ]; then cmd="$cmd -deb"; else cmd="$cmd -nodeb"; fi
   if [ $mkrpm -gt 0 ]; then cmd="$cmd -rpm"; else cmd="$cmd -norpm"; fi
