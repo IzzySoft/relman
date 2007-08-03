@@ -10,7 +10,6 @@ exec_prefix=$(prefix)
 bindir=$(exec_prefix)/bin
 datarootdir=$(prefix)/share
 datadir=$(datarootdir)
-sysconfdir=$(prefix)/etc
 docdir=$(datarootdir)/doc/relman
 sysconfdir=/etc
 mandir=$(datarootdir)/man
