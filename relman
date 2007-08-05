@@ -53,10 +53,10 @@ blink='\E[5m'
 NC='\e[0m'              # No Color
 
 #----------------------------------------------[ Read config file (if any) ]---
-if [ -f ~/.relmanrc ]; then
-  . ~/.relmanrc
-elif [ -f /etc/relman.conf ]; then
-  . /etc/relman.conf
+if [ -f ~/.relman/relman.conf ]; then
+  . ~/.relman/relman.conf
+elif [ -f /etc/relman/relman.conf ]; then
+  . /etc/relman/relman.conf
 fi
 
 . ./relman.conf
@@ -68,15 +68,26 @@ typeset -i SILENT=0
 
 while [ "$1" != "" ] ; do
   case "$1" in
-    -dryrun) dryrun=1;;
     -deb) _mkdeb=1;;
-    -nodeb) _mkdeb=0; _debscp=0;;
-    -nodist) _tarscp=0; _tarftp=0; _debscp=0; _sdebscp=0;;
-    -noftp) _tarftp=0;;
-    -norpm) _mkrpm=0;;
-    -noscp) _tarscp=0;;
+    -dryrun) dryrun=1;;
+    -nodeb) _mkdeb=0; _debscp=0; _sdebftp=0;;
+    -nodebdist) _debftp=0; _debscp=0;;
+    -nodebftp) _debftp=0;;
     -nodebscp) _debscp=0;;
+    -nodist) _tarscp=0; _tarftp=0; _debftp=0; _debscp=0; _sdebftp=0; _sdebscp=0; _rpmftp=0; _rpmscp=0; _srpmftp=0; _srpmscp=0;;
+    -noftp) _tarftp=0; _debftp=0; _sdebftp=0; _rpmftp=0; _srpmftp=0;;
+    -norpm) _mkrpm=0; _rpmftp=0; _rpmscp=0; _srpmftp=0; _srpmscp=0;;
+    -norpmdist) _rpmftp=0; _rpmscp=0;;
+    -norpmftp) _rpmftp=0;;
+    -norpmscp) _rpmscp=0;;
+    -noscp) _tarscp=0; _debscp=0; _sdebscp=0; _rpmscp=0; _srpmscp=0;;
+    -nosdebdist) _sdebftp=0; _sdebscp=0;;
+    -nosdebftp) _sdebftp=0;;
+    -nosdebscp) _sdebscp=0;;
     -notar) _mktar=0;;
+    -notardist) _tarftp=0; _tarscp=0;;
+    -notarftp) _tarftp=0;;
+    -notarscp) _tarscp=0;;
     -p) shift; _pkgmakeparms="${_pkgmakeparms} $1";;
     -q) let SILENT=$SILENT+1;;
     -r) shift; release=$1;;
@@ -91,10 +102,11 @@ function getopts {
   [ -n "${_mkdeb}" ] && mkdeb=${_mkdeb}
   [ -n "${_mkrpm}" ] && mkrpm=${_mkrpm}
   [ -n "${_mktar}" ] && mktar=${_mktar}
-  [ "${_debscp}" = "0" ] && debscp=""
-  [ "${_tarftp}" = "0" ] && tarftp=""
-  [ "${_tarscp}" = "0" ] && tarscp=""
-  [ "${_sdebscp}" = "0" ] && sdebscp=""
+  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp; do
+    eval ba=\$"_${varname}"
+    [ -n "$ba" ] && eval ${varname}=$ba
+    [ "${!varname}" = "0" ] && eval ${varname}=""
+  done
   [ -n "${_pkgmakeparms}" ] && pkgmakeparms=${_pkgmakeparms}
   [ -n "${_spectpl}" ] && spectpl=${_spectpl}
 }
@@ -175,10 +187,10 @@ function getprogcfg {
   eval group=\$"${PRG}_group"
   eval section=\$"${PRG}_section"
   eval prerun=\$"${PRG}_pre"
-  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmftp; do
+  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp; do
     eval ba=\$"${PRG}_${varname}"
     [ -n "$ba" ] && eval ${varname}=$ba
-    [ "${!varname}" = "0" ] && eval ${varname}=""
+    [ "${!varname}" = "0" ] && eval "${varname}=\"\""
   done
 }
 
