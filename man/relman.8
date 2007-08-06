@@ -1,0 +1,191 @@
+.TH relman 8 "05 August 2007"
+.IX relman
+.SH NAME
+relman - a frontend to pkgmake with additional features, also doing the distribution
+
+.SH SYNOPSIS
+.B relman
+
+.B relman
+.RB < "\fIPackageName\fR" >
+.RB < "\fIVersion\fR" >
+.RB [ "options" ]
+
+Possible options:
+.RB [ "-deb" ]
+.RB [ "-dryrun" ]
+.RB [ "-nodeb" ]
+.RB [ "-noftp" ]
+.RB [ "-norpm" ]
+.RB [ "-noscp" ]
+.RB [ "-nodebdist" ]
+.RB [ "-nodebftp" ]
+.RB [ "-nodebscp" ]
+.RB [ "-nodist" ]
+.RB [ "-norpmdist" ]
+.RB [ "-norpmftp" ]
+.RB [ "-norpmscp" ]
+.RB [ "-nosdebdist" ]
+.RB [ "-nosdebftp" ]
+.RB [ "-nosdebscp" ]
+.RB [ "-notar" ]
+.RB [ "-notardist" ]
+.RB [ "-notarftp" ]
+.RB [ "-notarscp" ]
+.RB [ "-p" " <\fI'pkgmake parms'\fR>" ]
+.RB [ "-q" ]
+.RB [ "-r" " <\fIrelease\fR>" ]
+.RB [ "-rpm" ]
+.RB [ "-t" " <\fIspecfile\fR>" ]
+.RB [ "-y" ]
+
+.SH DESCRIPTION
+relman acts as a frontend to pkgmake. Its target is to make the usage of pkgmake
+even simpler (saving you from the need to remember the command line switches
+needed for each project) by providing project-based settings in its configuration
+file - plus also making the distribution of the created packages via ftp and/or
+scp.
+
+While you can store all options for all of your projects into relmans
+configuration file, relman still offers you the flexibility to override these
+settings on the command line. Invoking relman without parameters enters
+interactive mode.
+
+.SH OPTIONS
+.IP "\fBPackageName\fR"
+Name of the package to build. This will be used in the spec file for the name
+tag as well as to derive the appropriate file names.
+
+.IP "\fB-deb\fR"
+Make *.deb (even if config says MKDEB=0)
+
+.IP "\fB-dryrun\fR"
+Instead of executing the commands, only display what \fBwould\fR be executed.
+
+.IP "\fB-nodeb\fR"
+Don't make a *.deb package (implicitly sets -nodebdist)
+
+.IP "\fB-nodebdist\fR"
+Don't distribute *.[s]deb - same as -nodebscp -nodebftp -nosdebscp -nosdebftp
+
+.IP "\fB-nodebftp\fR"
+Don't distribute *.[s]deb via FTP
+
+.IP "\fB-nodebscp\fR"
+Don't distribute *.[s]deb via SCP
+
+.IP "\fB-nodist\fR"
+Don't distribute anything - just create the packages and exit.
+
+.IP "\fB-noftp\fR"
+Same as combining -nodebftp -nosdebftp -norpmftp -nosrpmftp -notarftp (nothing
+gets distributed via FTP).
+
+.IP "\fB-norpm\fR"
+Don't create *.[s]rpm - and logically don't distribute *.[s]rpm
+
+.IP "\fB-norpmdist\fR"
+Don't distribute *.rpm (same as -norpmftp -norpmftp)
+
+.IP "\fB-norpmftp\fR"
+Don't distribute *.rpm via FTP
+
+.IP "\fB-norpmscp\fR"
+Don't distribute *.rpm via SCP
+
+.IP "\fB-noscp\fR"
+Pendant to -noftp: Nothing gets distributed via SCP (includes -nodebscp,
+-notarscp, etc.pp.)
+
+.IP "\fB-nosdebdist\fR"
+Don't distribute *.sdeb (same as -nosdebftp -nosdebscp)
+
+.IP "\fB-nosdebftp\fR"
+Don't distribute *.sdeb via FTP
+
+.IP "\fB-nosdebscp\fR"
+Don't distribute *.sdeb via SCP
+
+.IP "\fB-noscp\fR"
+Don't distribute via SCP at all (same as combining all -no*scp parameters)
+
+.IP "\fB-nosdebdist\fR"
+Don't distribute the *.sdeb file (-nosdebftp -nosdebscp)
+
+.IP "\fB-nosdebftp\fR"
+Don't distribute the *.sdeb file via FTP
+
+.IP "\fB-nosdebscp\fR"
+Don't distribute the *.sdeb file via SCP
+
+.IP "\fB-notar\fR"
+Don't create tarball from the sources. This means, that the source tarball
+already exists in the SOURCES/ directory with the correct naming conventions.
+Even if you specify a directory with -d, that will be ignored in this case.
+
+.IP "\fB-notardist\fR"
+Don't distribute the tarball (-notarftp -notarscp)
+
+.IP "\fB-notarftp\fR"
+Don't distribute the tarball via FTP
+
+.IP "\fB-notarscp\fR"
+Don't distribute the tarball via SCP
+
+.IP "\fB-p\fR <\fI'pkgmake parms'\fR>"
+If there's anything else you want to pass to pkgmake that is not covered by
+relmans parameter, you can pass it here.
+
+.IP "\fB-q\fR"
+Tell the sub-processes to be quiet. You can use this option up to 2 times on
+one call (starting from the 3rd time, it will simply be ignored): One -q
+suppresses the load of STDOUT from the build process. The second -q
+additionally suppresses its still talkative STDERR.
+
+.IP "\fB-r\fR <\fIrelease\fR>"
+Use a different release of the same version.
+
+.IP "\fB-rpm\fR"
+Make *.rpm even if config says MKRPM=0
+
+.IP "\fB-t\fR <\fIspecfile\fR>"
+Template file to use for the *.spec file. This file must be in the SPEC/
+directory of your Build environment. If your directory tree is already arranged
+the same way as the installation would be, you can use the alldirs.tpl (so all
+files and directories will be included as-is). But if your software uses the
+classical configure, make, make install - you should rather use the make.tpl
+as a template, copy it to <package>.tpl and edit the file list manually
+(examples are given inside make.tpl - or read the rpmbuild howtos for more
+details).
+
+.IP "\fB-y\fR"
+Don't ask me stupid questions - of course I am sure, I know what I'm doing! So
+answer yourself "Yes" to all!
+
+.SH "CONFIGURATION"
+Configuration can be done in either ~/.relman/relman.conf,
+/etc/relman/relman.conf or the head of the relman executable - which is also
+the order of preference: relman first takes the configuration inside the script
+itself, and then looks for ~/.relman/relman.conf - if found, this is used. If it
+is not found, it looks for the /etc/relman/relman.conf and uses this file (if
+found) to overwrite the default settings.
+
+.SH "FILES"
+/usr/bin/relman
+
+/etc/relman/relman.conf
+
+~/.relman/relman.conf
+
+.SH "SEE ALSO"
+relman.conf(5)
+
+.SH "AUTHOR" 
+.PP 
+This manual page was written by Andreas Itzchak Rehberg (devel@izzysoft.de),
+the author of the program. Permission is granted to copy, distribute and/or
+modify this document under the terms of the GNU General Public License,
+Version 2.
+
+More information may be found on the authors website, http://www.izzysoft.de/
+ 

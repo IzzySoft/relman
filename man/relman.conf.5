@@ -1,0 +1,127 @@
+.TH "RELMAN.CONF" "5" "30 July 2007"
+.SH "NAME" 
+relman.conf \- Configuration file for \fBrelman\fR, which acts as a frontend
+to pkgmake, offering additional features like file distribution
+.SH "DESCRIPTION" 
+.PP 
+This manual page documents the options that can be set in the relman.conf
+configuration file. For a description of what relman does, see the relman(8)
+manpage.
+
+.SH "SETTINGS" 
+.PP 
+The syntax of options is OPTION=value - Bash syntax, since it will be sourced
+by the relman executable, which is written in Bash script.
+
+.PP
+The following settings are available in relman.conf:
+
+.SS "GLOBAL SETTINGS"
+
+.IP "\fBpkgroot\fR"
+Root directory of the package tree (the same as BUILDDEB for pkgmake).
+
+.IP "\fBpkgmake\fR"
+The pkgmake executable. If it's in your path, it's enough to set it to "pkgmake".
+Otherwise specify full path.
+
+.IP "\fBpkgmakeparms\fR"
+What other parameters to pass to pkgmake. Default is "-q -Q" (suppress STDOUT
+from the build process and STDOUT from pkgmake itself).
+
+.IP "\fBrelease\fR"
+Default release (what is passed with \fB-r\fR to pkgmake).
+
+.IP "\fBbuildarch\fR"
+Default build architecture (\fB-b\fR to pkgmake).
+
+.IP "\fBmktar\fR"
+Whether to copy the sources from the projects *_srcdir to create a tar archive
+of (set it to "1" therefore), or the corresponding tar archive already exists
+in the {pkgroot}/SOURCES directory (mktar=0). E.g. your *_pre script may have
+put it there.
+
+.IP "\fBmkdeb\fR"
+Whether to create Debian *.deb packages (mkdeb=1) or not (mkdeb=0)
+
+.IP "\fBmkrpm\fR"
+Whether to create RPM packages.
+
+.IP "\fBtarftp\fR"
+FTP server the tarballs are copied to. relman will log in there using the
+credentials defined in your ~/.netrc file (see \fBman netrc\fR for details).
+Leave empty if you don't want to use it. To generally use it but not for a
+given project, set the server here and specify *_tarftp=0 for the project.
+
+.IP "\fBtarftpdir\fR"
+Target directory on the FTP server, where the tarball should be put to.
+
+.IP \fBtarscp\fR
+Target ([user@]server:directory) to copy the tarball to via SCP.
+
+.IP \fBdebftp\fR
+Same as \fBtarftp\fR, just for the *.deb files.
+
+.IP \fBdebftpdir\fR
+Target directory on the FTP server, where the *.deb should be put to.
+
+.IP \fBdebscp\fR
+Target ([user@]server:directory) to copy the *.deb to via SCP.
+
+.IP \fBsdebftp\fR
+Same as \fBtarftp\fR, just for the *.sdeb files.
+
+.IP \fBsdebftpdir\fR
+Same as \fBtarftpdir\fR, just for the *.sdeb files.
+
+.IP \fBsdebscp\fR
+Target ([user@]server:directory) to copy the *.sdeb to via SCP.
+
+.IP \fBrpmftp\fR
+Same as \fBtarftp\fR, just for the *.rpm files.
+
+.IP \fBrpmftpdir\fR
+Same as \fBtarftpdir\fR, just for the *.rpm files.
+
+.IP \fBrpmscp\fR
+Target ([user@]server:directory) to copy the *.rpm to via SCP.
+
+.IP \fBsrpmftp\fR
+Same as \fBtarftp\fR, just for the *.srpm files.
+
+.IP \fBsrpmftpdir\fR
+Same as \fBtarftpdir\fR, just for the *.srpm files.
+
+.IP \fBsrpmscp\fR
+Target ([user@]server:directory) to copy the *.srpm to via SCP.
+
+.SS "PROJECT SETTINGS"
+For each project, you may override above settings by prefixing them with the
+chosen project prefix. Specifying these overrides is optional. Mandatory is,
+however, the setting of the name. One more optional setting is the source
+directory (passed to pkgmake via the \fB-d\fR switch).
+
+.IP "\fB*_name\fR"
+Name of the project. This is the basename of all created packages for this
+project.
+
+.IP "\fB*_srcdir\fR"
+Source directory - pkgmake copies the sources from here, since it gets this
+directory passed with its \fB-d\fR switch.
+
+.IP "\fB*_pre\fR"
+Script/command to run before starting the entire process. Optional.
+
+.SH "SEE ALSO" 
+.PP 
+relman(8)
+
+.SH "AUTHOR" 
+.PP 
+This manual page was written by Andreas Itzchak Rehberg (devel@izzysoft.de),
+the author of the program. Permission is granted to copy, distribute and/or
+modify this document under the terms of the GNU General Public License,
+Version 2.
+
+More information may be found on the authors website, http://www.izzysoft.de/
+ 
