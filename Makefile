@@ -11,13 +11,14 @@ bindir=$(exec_prefix)/bin
 datarootdir=$(prefix)/share
 datadir=$(datarootdir)
 docdir=$(datarootdir)/doc/relman
-sysconfdir=/etc
+sysconfdir=/etc/relman
 mandir=$(datarootdir)/man
 man5dir=$(mandir)/man5
 man8dir=$(mandir)/man8
 
 install: installdirs
 	$(INSTALL_DATA) -c relman.conf $(DESTDIR)$(sysconfdir)
+	$(INSTALL_DATA) -c version $(DESTDIR)$(sysconfdir)
 	$(INSTALL) -c relman $(DESTDIR)$(bindir)
 	$(INSTALL_DATA) -c doc/* $(DESTDIR)$(docdir)
 	#gzip man/*
