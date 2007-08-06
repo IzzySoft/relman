@@ -13,6 +13,13 @@ manpage.
 The syntax of options is OPTION=value - Bash syntax, since it will be sourced
 by the relman executable, which is written in Bash script.
 
+relman first parses the /etc/relman/relman.conf, and after that the
+~/.relman/relman.conf (which overwrites settings then). So in the first file
+you should define system-wide defaults - and your personal preferences as
+e.g. your projects should be defined in your personal config file. If you are
+the only user on the system, you could of course put all configuration to
+/etc/relman/relman.conf if you prefer, since you don't hurt anyone by that.
+
 .PP
 The following settings are available in relman.conf:
 
@@ -115,6 +122,9 @@ Script/command to run before starting the entire process. Optional.
 .SH "SEE ALSO" 
 .PP 
 relman(8)
+
+\fB/etc/relman.conf\fR contains some basic examples as well, which should
+get you started.
 
 .SH "AUTHOR" 
 .PP 

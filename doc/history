@@ -9,6 +9,7 @@ v0.1.2
 + added man pages
 * reading config in sequence (internal-/etc/relman-~/.relman/)
 + added missing project-based settings
++ created documented example relman.conf
 
 v0.1.1 (03.08.2007)
 -------------------
