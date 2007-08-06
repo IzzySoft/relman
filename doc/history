@@ -1,0 +1,15 @@
+$Id$
+
+History for relman
+==================
+
+v0.1.2
+-------------------
++ added distribution targets for [s]deb and [s]rpm via scp and ftp
++ added man pages
+* reading config in sequence (internal-/etc/relman-~/.relman/)
++ added missing project-based settings
+
+v0.1.1 (03.08.2007)
+-------------------
+* first usable version (used only internally)

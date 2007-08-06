@@ -41,10 +41,10 @@ srpmftp=
 srpmscp=
 
 BINDIR=${0%/*}				# where this script resides
-. $BINDIR/version			# Get our version number
 dispdetails=1
 dryrun=0
 yestoall=0
+RELMANV=0.0.0				# dummy - real value in /etc/relman/version
 
 #-----------------------------------------------------------------[ Colors ]---
 red='\e[0;31m'
@@ -53,13 +53,9 @@ blink='\E[5m'
 NC='\e[0m'              # No Color
 
 #----------------------------------------------[ Read config file (if any) ]---
-if [ -f ~/.relman/relman.conf ]; then
-  . ~/.relman/relman.conf
-elif [ -f /etc/relman/relman.conf ]; then
-  . /etc/relman/relman.conf
-fi
-
-. ./relman.conf
+[ -f /etc/relman/version ] && . /etc/relman/version
+[ -f /etc/relman/relman.conf ] && . /etc/relman/relman.conf
+[ -f ~/.relman/relman.conf ] && . ~/.relman/relman.conf
 
 #-------------------------------------------[ process command line options ]---
 typeset -i SILENT=0
@@ -98,6 +94,7 @@ while [ "$1" != "" ] ; do
   shift
 done
 
+#-----------------------------------------------[ Process cmd line options ]---
 function getopts {
   [ -n "${_mkdeb}" ] && mkdeb=${_mkdeb}
   [ -n "${_mkrpm}" ] && mkrpm=${_mkrpm}
@@ -180,7 +177,7 @@ function getprogcfg {
   eval srcdir=\$"${PRG}_srcdir"
   [ -z "$srcdir" ] && srcdir="${pkgroot}/BUILD/${prog}-${version}"
   eval spectpl=\$"${PRG}_spectpl"
-  for varname in buildarch tarftpdir debftpdir sdebftpdir rpmftpdir srpmftpdir mktar mkdeb mkrpm; do
+  for varname in buildarch release pkgmakeparms tarftpdir debftpdir sdebftpdir rpmftpdir srpmftpdir mktar mkdeb mkrpm; do
     eval ba=\$"${PRG}_${varname}"
     [ -n "$ba" ] && eval ${varname}=$ba
   done
