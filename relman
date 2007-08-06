@@ -8,11 +8,8 @@
 
 #===============================================[ Setup Script environment ]===
 #------------------------------------[ Read some presets from pkgmake.conf ]---
-if [ -f ~/.pkgmake/pkgmake.conf ]; then
-  . ~/.pkgmake/pkgmake.conf
-elif [ -f /etc/pkgmake/pkgmake.conf ]; then
-  . /etc/pkgmake/pkgmake.conf
-fi
+[ -f /etc/pkgmake/pkgmake.conf ] && . /etc/pkgmake/pkgmake.conf
+[ -f ~/.pkgmake/pkgmake.conf ] && . ~/.pkgmake/pkgmake.conf
 
 #---------------------------------------------------------------[ Settings ]---
 pkgroot="/usr/src/debian"
@@ -183,7 +180,7 @@ function getprogcfg {
   done
   eval group=\$"${PRG}_group"
   eval section=\$"${PRG}_section"
-  eval prerun=\$"${PRG}_pre"
+  eval prerun=\$"${PRG}_prerun"
   for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp; do
     eval ba=\$"${PRG}_${varname}"
     [ -n "$ba" ] && eval ${varname}=$ba
