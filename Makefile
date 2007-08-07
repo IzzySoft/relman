@@ -21,21 +21,21 @@ install: installdirs
 	$(INSTALL_DATA) -c version $(DESTDIR)$(sysconfdir)
 	$(INSTALL) -c relman $(DESTDIR)$(bindir)
 	$(INSTALL_DATA) -c doc/* $(DESTDIR)$(docdir)
-	#gzip man/*
-	#$(INSTALL_DATA) -c man/*.5* $(DESTDIR)$(man5dir)
-	#$(INSTALL_DATA) -c man/*.8* $(DESTDIR)$(man8dir)
+	gzip man/*
+	$(INSTALL_DATA) -c man/*.5* $(DESTDIR)$(man5dir)
+	$(INSTALL_DATA) -c man/*.8* $(DESTDIR)$(man8dir)
 
 uninstall:
-	rm -f $(DESTDIR)$(sysconfdir)/relman.conf
+	rm -rf $(DESTDIR)$(sysconfdir)
 	rm -f $(DESTDIR)$(bindir)/relman
 	rm -rf $(DESTDIR)$(docdir)
-	#rm -f $(DESTDIR)$(man5dir)/relman.*
-	#rm -f $(DESTDIR)$(man8dir)/relman.*
+	rm -f $(DESTDIR)$(man5dir)/relman.*
+	rm -f $(DESTDIR)$(man8dir)/relman.*
 
 installdirs:
 	# Generate all required target directories (due to DESTDIR, i.e. all)
 	mkdir -p $(DESTDIR)$(docdir)
 	if [ ! -d $(DESTDIR)$(bindir) ]; then mkdir -p $(DESTDIR)$(bindir); fi
 	if [ ! -d $(DESTDIR)$(sysconfdir) ]; then mkdir -p $(DESTDIR)$(sysconfdir); fi
-	#if [ ! -d $(DESTDIR)$(man5dir) ]; then mkdir -p $(DESTDIR)$(man5dir); fi
-	#if [ ! -d $(DESTDIR)$(man8dir) ]; then mkdir -p $(DESTDIR)$(man8dir); fi
+	if [ ! -d $(DESTDIR)$(man5dir) ]; then mkdir -p $(DESTDIR)$(man5dir); fi
+	if [ ! -d $(DESTDIR)$(man8dir) ]; then mkdir -p $(DESTDIR)$(man8dir); fi
