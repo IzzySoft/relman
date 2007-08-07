@@ -3,13 +3,14 @@ $Id$
 History for relman
 ==================
 
-v0.1.2
+v0.1.2 (07.08.2007)
 -------------------
 + added distribution targets for [s]deb and [s]rpm via scp and ftp
 + added man pages
-* reading config in sequence (internal-/etc/relman-~/.relman/)
+* reading config in sequence (internal - /etc/relman - ~/.relman/)
 + added missing project-based settings
 + created documented example relman.conf
+* first public release
 
 v0.1.1 (03.08.2007)
 -------------------
