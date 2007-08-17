@@ -36,6 +36,10 @@ rpmscp=
 srpmftpdir=
 srpmftp=
 srpmscp=
+prerun=
+prebuild=
+postbuild=
+postrun=
 
 BINDIR=${0%/*}				# where this script resides
 dispdetails=1
@@ -81,7 +85,15 @@ while [ "$1" != "" ] ; do
     -notardist) _tarftp=0; _tarscp=0;;
     -notarftp) _tarftp=0;;
     -notarscp) _tarscp=0;;
+    -noprerun) _prerun=0;;
+    -noprebuild) _prebuild=0;;
+    -nopostbuild) _postbuild=0;;
+    -nopostrun) _postrun=0;;
     -p) shift; _pkgmakeparms="${_pkgmakeparms} $1";;
+    -prerun) shift; _prerun=$1;;
+    -prebuild) shift; _prebuild=$1;;
+    -postbuild) shift; _postbuild=$1;;
+    -postrun) shift; _postrun=$1;;
     -q) let SILENT=$SILENT+1;;
     -r) shift; release=$1;;
     -rpm) _mkrpm=1;;
@@ -96,7 +108,7 @@ function getopts {
   [ -n "${_mkdeb}" ] && mkdeb=${_mkdeb}
   [ -n "${_mkrpm}" ] && mkrpm=${_mkrpm}
   [ -n "${_mktar}" ] && mktar=${_mktar}
-  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp; do
+  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp prerun prebuild postbuild postrun; do
     eval ba=\$"_${varname}"
     [ -n "$ba" ] && eval ${varname}=$ba
     [ "${!varname}" = "0" ] && eval ${varname}=""
