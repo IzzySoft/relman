@@ -40,6 +40,7 @@ prerun=
 prebuild=
 postbuild=
 postrun=
+codeget=cp
 
 BINDIR=${0%/*}				# where this script resides
 dispdetails=1
@@ -65,6 +66,7 @@ typeset -i SILENT=0
 
 while [ "$1" != "" ] ; do
   case "$1" in
+    -codeget) shift; _codeget=$1;;
     -deb) _mkdeb=1;;
     -dryrun) dryrun=1;;
     -nodeb) _mkdeb=0; _debscp=0; _sdebftp=0;;
@@ -108,7 +110,7 @@ function getopts {
   [ -n "${_mkdeb}" ] && mkdeb=${_mkdeb}
   [ -n "${_mkrpm}" ] && mkrpm=${_mkrpm}
   [ -n "${_mktar}" ] && mktar=${_mktar}
-  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp prerun prebuild postbuild postrun; do
+  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp prerun prebuild postbuild postrun codeget; do
     eval ba=\$"_${varname}"
     [ -n "$ba" ] && eval ${varname}=$ba
     [ "${!varname}" = "0" ] && eval ${varname}=""
@@ -141,7 +143,7 @@ function stayorgo {
 function header {
   [ $SILENT -lt 3 ] && clear
   say "${blue}relman v${RELMANV}"
-  say "-------------"
+  say "-------------$NC"
   say
 }
 
@@ -196,7 +198,7 @@ function getprogcfg {
   eval prebuild=\$"${PRG}_prebuild"
   eval postbuild=\$"${PRG}_postbuild"
   eval postrun=\$"${PRG}_postrun"
-  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp; do
+  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp codeget; do
     eval ba=\$"${PRG}_${varname}"
     [ -n "$ba" ] && eval ${varname}=$ba
     [ "${!varname}" = "0" ] && eval "${varname}=\"\""
@@ -307,10 +309,12 @@ builddir="${pkgroot}/BUILD/${prog}-${version}"
     getparam "Spec Template to use (${prog}.tpl)"
     [ -n "$param" ] && spectpl="$param"
   }
-  yesno12 "Upload to SourceForge"
+  yesno12 "Distribute *.tar via FTP"
   [ $param -eq 0 ] && tarftp=""
-  yesno12 "Distribute via SSH"
+  yesno12 "Distribute *.tar via SSH"
   [ $param -eq 0 ] && tarscp=""
+  yesno12 "Distribute *.deb via FTP"
+  [ $param -eq 0 ] && debftp=""
   yesno12 "Distribute *.deb via SSH"
   [ $param -eq 0 ] && debscp=""
   getparam "Extra parameters to pkgmake"
@@ -325,6 +329,8 @@ for varname in prerun prebuild postbuild postrun; do
     eval "${varname}=\"$var\""
   }
 done
+
+tarfile=${pkgroot}/SOURCES/${prog}-${version}.tar.gz
 
 #=====================================================[ Processing Package ]===
 #-----------------------[ Input verification (only when called w/o params) ]---
@@ -367,13 +373,56 @@ done
   say
 }
 
-say "Preparing ${prog} v${version} for release:${NC}"
+say "${blue}Preparing ${prog} v${version} for release:${NC}"
 
 #-----------------------------------------[ Calling PreRun script (if any) ]---
 [ -n "$prerun" ] && {
   say "${blue}* Running pre-processing script: $prerun"
   runcmd "$prerun"
 }
+
+#----------------------------------------[ XFer sources to build directory ]---
+say "${blue}* Obtaining the code$NC"
+here=`pwd`
+cd $srcdir
+case $codeget in
+  "cp") runcmd "mkdir -p $builddir"; runcmd "cp -pr * $builddir/";;
+  "cvs") module=`cat $srcdir/CVS/Repository`
+         cvsroot=`cat $srcdir/CVS/Root`
+         [ -z "$module" ] && {
+	   say "${red}  Could not find out the CVS module name. Perhaps the sourcedir is no CVS workdir?$NC"
+	   finito
+	 }
+         runcmd "mkdir -p $builddir";
+	 cd ${pkgroot}/BUILD
+	 cmd="cvs -d $cvsroot export -D now -d ${prog}-${version} $module"
+	 case $SILENT in
+	   1) cmd="$cmd >/dev/null";;
+	   2) cmd="$cmd &>/dev/null";;
+	 esac
+         runcmd "$cmd"
+	 [ $? -gt 0 ] && {
+	   say "${red}  Looks like CVS aborted unnormally. So we do the same.$NC"
+	   finito
+	 }
+	 ;;
+  "svn") runcmd "mkdir -p $builddir";
+         cmd="svn export $srcdir $builddir"
+	 case $SILENT in
+	   1) cmd="$cmd >/dev/null";;
+	   2) cmd="$cmd &>/dev/null";;
+	 esac
+         runcmd "$cmd"
+	 [ $? -gt 0 ] && {
+	   say "${red}  Looks like SVN aborted unnormally. So we do the same.$NC"
+	   finito
+	 }
+	 ;;
+  "")    ;;
+  *) say "${red}  The value specified for codeget ($codeget) is invalid!$NC"
+     finito;;
+esac
+rc=`cd $here`
 
 #---------------------------------------[ Calling PreBuild script (if any) ]---
 [ -n "$prebuild" ] && {
@@ -387,7 +436,11 @@ export PKGMAKE_USED="relman v${RELMANV}"
   say "${blue}* Calling pkgmake$NC"
   cmd="$pkgmake $prog $version -r $release -b $buildarch $pkgmakeparms"
   [ -n "$spectpl" ] && cmd="$cmd -t $spectpl"
-  if [ $mktar -gt 0 ]; then cmd="$cmd -d $srcdir"; else cmd="$cmd -notar"; fi
+  if [ -n "$codeget" ]; then
+    [ $mktar -lt 1 ] && cmd="$cmd -notar"
+  else
+    if [ $mktar -gt 0 ]; then cmd="$cmd -d $srcdir"; else cmd="$cmd -notar"; fi
+  fi
   if [ $mkdeb -gt 0 ]; then cmd="$cmd -deb"; else cmd="$cmd -nodeb"; fi
   if [ $mkrpm -gt 0 ]; then cmd="$cmd -rpm"; else cmd="$cmd -norpm"; fi
   [ -n "$group" ] && cmd="$cmd -g \"$group\""
@@ -411,7 +464,6 @@ export PKGMAKE_USED="relman v${RELMANV}"
 }
 
 #---------------------------------------------------------------[ Tar Dist ]---
-tarfile=${pkgroot}/SOURCES/${prog}-${version}.tar.gz
 [ -n "$tarftp" ] && ftpxfer "Tar" $tarftp $tarftpdir "${pkgroot}/SOURCES" "${prog}-${version}.tar.gz"
 [ -n "$tarscp" ] && scpxfer "Tar" $tarfile $tarscp
 

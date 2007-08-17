@@ -1,4 +1,4 @@
-.TH relman 8 "05 August 2007"
+.TH relman 8 "17 August 2007"
 .IX relman
 .SH NAME
 relman - a frontend to pkgmake with additional features, also doing the distribution
@@ -12,19 +12,24 @@ relman - a frontend to pkgmake with additional features, also doing the distribu
 .RB [ "options" ]
 
 Possible options:
+.RB [ "-codeget <\fImethod\fR>" ]
 .RB [ "-deb" ]
 .RB [ "-dryrun" ]
 .RB [ "-nodeb" ]
 .RB [ "-noftp" ]
-.RB [ "-norpm" ]
-.RB [ "-noscp" ]
 .RB [ "-nodebdist" ]
 .RB [ "-nodebftp" ]
 .RB [ "-nodebscp" ]
 .RB [ "-nodist" ]
+.RB [ "-nopostbuild" ]
+.RB [ "-nopostrun" ]
+.RB [ "-nopprebuild" ]
+.RB [ "-noprerun" ]
+.RB [ "-norpm" ]
 .RB [ "-norpmdist" ]
 .RB [ "-norpmftp" ]
 .RB [ "-norpmscp" ]
+.RB [ "-noscp" ]
 .RB [ "-nosdebdist" ]
 .RB [ "-nosdebftp" ]
 .RB [ "-nosdebscp" ]
@@ -33,6 +38,10 @@ Possible options:
 .RB [ "-notarftp" ]
 .RB [ "-notarscp" ]
 .RB [ "-p" " <\fI'pkgmake parms'\fR>" ]
+.RB [ "-postbuild <\fIscript\fR>" ]
+.RB [ "-postrun <\fIscript\fR>" ]
+.RB [ "-prebuild <\fIscript\fR>" ]
+.RB [ "-prerun <\fIscript\fR>" ]
 .RB [ "-q" ]
 .RB [ "-r" " <\fIrelease\fR>" ]
 .RB [ "-rpm" ]
@@ -55,6 +64,14 @@ interactive mode.
 .IP "\fBPackageName\fR"
 Name of the package to build. This will be used in the spec file for the name
 tag as well as to derive the appropriate file names.
+
+.IP "\fB-codeget\fR"
+Method to obtain the source code from the source dir. Possible values are "cp"
+(copy), "cvs" (using "cvs export"), "svn" (using "svn export") and "0" (nothing;
+let pkgmake do the job). If you let relman make the copy, you can use the
+\fBprebuild\fR config option or \fB-prebuild\fR command line option to do
+something on the copy of your code before making the release, leaving the
+original code untouched.
 
 .IP "\fB-deb\fR"
 Make *.deb (even if config says MKDEB=0)
@@ -80,6 +97,18 @@ Don't distribute anything - just create the packages and exit.
 .IP "\fB-noftp\fR"
 Same as combining -nodebftp -nosdebftp -norpmftp -nosrpmftp -notarftp (nothing
 gets distributed via FTP).
+
+.IP "\fB-nopostbuild\fR"
+Don't run the configured postbuild script
+
+.IP "\fB-nopostrun\fR"
+Don't run the configured postrun script
+
+.IP "\fB-noprebuild\fR"
+Don't run the configured prebuild script
+
+.IP "\fB-noprerun\fR"
+Don't run the configured prerun script
 
 .IP "\fB-norpm\fR"
 Don't create *.[s]rpm - and logically don't distribute *.[s]rpm
@@ -135,6 +164,26 @@ Don't distribute the tarball via SCP
 .IP "\fB-p\fR <\fI'pkgmake parms'\fR>"
 If there's anything else you want to pass to pkgmake that is not covered by
 relmans parameter, you can pass it here.
+
+.IP "\fB-postbuild\fR <\fIscript\fR>"
+Script to run after the build process, but before doing the distribution (i.e.
+immediately after returning from pkgmake). This can be the name of a shell
+script, or any Bash commands (enclosed in quotes).
+
+.IP "\fB-postrun\fR <\fIscript\fR>"
+Script to run at the very end of the entire process. This can be the name
+of a shell script, or any Bash commands (enclosed in quotes). Note that this
+script will not be executed if you decide not to distribute your release. Yeah,
+right: You don't give us your release - so you get punished. A little. Somehow.
+
+.IP "\fB-prebuild\fR <\fIscript\fR>"
+Script to run after the code copy (see \fB-codeget\fR), but before entering the
+build process (i.e. immediately before calling pkgmake). This can be the name
+of a shell script, or any Bash commands (enclosed in quotes).
+
+.IP "\fB-prerun\fR <\fIscript\fR>"
+Script to run at the very beginning of the entire process. This can be the name
+of a shell script, or any Bash commands (enclosed in quotes).
 
 .IP "\fB-q\fR"
 Tell the sub-processes to be quiet. You can use this option up to 2 times on

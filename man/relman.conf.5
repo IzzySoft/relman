@@ -1,4 +1,4 @@
-.TH "RELMAN.CONF" "5" "30 July 2007"
+.TH "RELMAN.CONF" "5" "17 August 2007"
 .SH "NAME" 
 relman.conf \- Configuration file for \fBrelman\fR, which acts as a frontend
 to pkgmake, offering additional features like file distribution
@@ -117,10 +117,12 @@ Source directory - pkgmake copies the sources from here, since it gets this
 directory passed with its \fB-d\fR switch.
 
 .IP "\fB*_prerun\fR"
-Script/command to run before starting the entire process. Optional.
+Script/command to run before starting the entire process. Optional. You may use
+the placeholders %p (program name), %v (version), %b (builddir)
 
 .IP "\fB*_prebuild\fR"
-Script/command to run before starting the build process. Optional.
+Script/command to run before starting the build process, but after obtaining
+the code. Optional.
 
 .IP "\fB*_postbuild\fR"
 Script/command to run after the build process finished. Optional.
@@ -128,6 +130,25 @@ Script/command to run after the build process finished. Optional.
 .IP "\fB*_postrun\fR"
 Script/command to run after the entire process finished. Skipped if no
 distribution takes place. Optional.
+
+.IP "\fB*_codeget\fR"
+How we shall obtain the code. Sure, pkgmake can do that as well - but if we
+want to do something on the code, but not in the original directory (i.e.
+with the \fBprebuild\fR script), we have to obtain the code ourselves and then
+let pkgmake know it's already in place. There are several options available:
+
+\fIcp\fR: Just use the local copy command "cp" to transfer the code. That's exactly what
+pkgmake would do.
+
+\fIcvs\fR: Let "cvs" make an export. relman checks the CVS directory in the
+\fB*_srcdir\fR to find out the repository and module information.
+
+\fIsvn\fR: Let "svn" make an export. Quite similiar to "cvs", just using
+Subversion instead.
+
+\fI0\fR: Nothing. Let pkgmake do the job. Note, that this also means that
+\fB*_prerun\fR and \fB*_prebuild\fR are running at the same position, and all
+changes to the "copy" (using the %b placeholder) will be overwritten by pkgmake.
 
 .SH "SEE ALSO" 
 .PP 

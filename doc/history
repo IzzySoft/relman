@@ -6,6 +6,11 @@ History for relman
 v0.1.3
 -------------------
 + added prebuild, postbuild and postrun options (for each package)
++ added "codeget": Optionally obtain the code via "cp", "cvs" or "svn" from
+  your source directory - or leave the job to pkgmake. In the first 3 cases,
+  you've got the chance to do something on the copy of your code before
+  releasing it, but without effect on your original source, when using the
+  "prebuild" option.
 
 v0.1.2 (07.08.2007)
 -------------------
