@@ -181,6 +181,9 @@ function getprogcfg {
   eval group=\$"${PRG}_group"
   eval section=\$"${PRG}_section"
   eval prerun=\$"${PRG}_prerun"
+  eval prebuild=\$"${PRG}_prebuild"
+  eval postbuild=\$"${PRG}_postbuild"
+  eval postrun=\$"${PRG}_postrun"
   for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp; do
     eval ba=\$"${PRG}_${varname}"
     [ -n "$ba" ] && eval ${varname}=$ba
@@ -268,6 +271,7 @@ header
 
 getprogcfg
 getopts $args
+builddir="${pkgroot}/BUILD/${prog}-${version}"
 
 [ -z "$version" ] && {
   getversion
@@ -302,9 +306,13 @@ getopts $args
   dispdetails=1
 }
 
-[ -n "$prerun" ] && {
-  prerun=`echo $prerun|sed "s/%p/$prog/"|sed "s/%v/$version/"`
-}
+tb=`echo "$builddir"|sed 's/\//\\\\\//g'` # escape slashes from builddir
+for varname in prerun prebuild postbuild postrun; do
+  [ -n "${!varname}" ] &&  {
+    var=`echo "${!varname}"|sed "s/%p/$prog/"|sed "s/%v/$version/"|sed "s/%b/$tb/"`
+    eval "${varname}=\"$var\""
+  }
+done
 
 #=====================================================[ Processing Package ]===
 #-----------------------[ Input verification (only when called w/o params) ]---
@@ -334,6 +342,9 @@ getopts $args
   echo " SRPM Distribution (FTP): $srpmftp"
   echo " SRPM Distribution (SSH): $srpmscp"
   echo " PreRun script          : $prerun"
+  echo " PreBuild script        : $prebuild"
+  echo " PostBuild script       : $postbuild"
+  echo " PostRun script         : $postrun"
   echo " Extra parms to pkgmake : $pkgmakeparms"
   echo " dryrun                 : $dryrun"
   [ $yestoall -eq 0 ] && {
@@ -352,6 +363,12 @@ say "Preparing ${prog} v${version} for release:${NC}"
   runcmd "$prerun"
 }
 
+#---------------------------------------[ Calling PreBuild script (if any) ]---
+[ -n "$prebuild" ] && {
+  say "${blue}* Running pre-build script: $prebuild"
+  runcmd "$prebuild"
+}
+
 #--------------------------------------------------------[ Calling pkgmake ]---
 export PKGMAKE_USED="relman v${RELMANV}"
 [ "${mkdeb}${mkrpm}" != "00" ] && {
@@ -366,6 +383,12 @@ export PKGMAKE_USED="relman v${RELMANV}"
   runcmd "$cmd"
 }
 
+#--------------------------------------[ Calling PostBuild script (if any) ]---
+[ -n "$postbuild" ] && {
+  say "${blue}* Running post-build script: $postbuild"
+  runcmd "$postbuild"
+}
+
 #------------------------------------------------------------[ Continue??? ]---
 [ -z "${tarscp}${tarftp}${debscp}${sdebscp}" ] && finito
 
@@ -375,9 +398,8 @@ export PKGMAKE_USED="relman v${RELMANV}"
   stayorgo
 }
 
-tarfile=${pkgroot}/SOURCES/${prog}-${version}.tar.gz
-
 #---------------------------------------------------------------[ Tar Dist ]---
+tarfile=${pkgroot}/SOURCES/${prog}-${version}.tar.gz
 [ -n "$tarftp" ] && ftpxfer "Tar" $tarftp $tarftpdir "${pkgroot}/SOURCES" "${prog}-${version}.tar.gz"
 [ -n "$tarscp" ] && scpxfer "Tar" $tarfile $tarscp
 
@@ -410,6 +432,12 @@ tarfile=${pkgroot}/SOURCES/${prog}-${version}.tar.gz
   rpmdir="${pkgroot}/SRPMS"; rpmfile="${prog}-${version}-${release}.src.rpm";
   [ -n "$srpmftp" ] && ftpxfer "SRPM" $srpmftp $srpmftpdir $rpmdir $rpmfile
   [ -n "$srpmscp" ] && scpxfer "SRPM" ${rpmdir}/${rpmfile} $srpmscp
+}
+
+#-----------------------------------------[ Calling PostRun script (if any) ]---
+[ -n "$postrun" ] && {
+  say "${blue}* Running post-processing script: $postrun"
+  runcmd "$postrun"
 }
 
 #----------------------------------------------------------[ Finished work ]---

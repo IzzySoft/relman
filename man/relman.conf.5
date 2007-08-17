@@ -116,8 +116,18 @@ project.
 Source directory - pkgmake copies the sources from here, since it gets this
 directory passed with its \fB-d\fR switch.
 
-.IP "\fB*_pre\fR"
+.IP "\fB*_prerun\fR"
 Script/command to run before starting the entire process. Optional.
+
+.IP "\fB*_prebuild\fR"
+Script/command to run before starting the build process. Optional.
+
+.IP "\fB*_postbuild\fR"
+Script/command to run after the build process finished. Optional.
+
+.IP "\fB*_postrun\fR"
+Script/command to run after the entire process finished. Skipped if no
+distribution takes place. Optional.
 
 .SH "SEE ALSO" 
 .PP 

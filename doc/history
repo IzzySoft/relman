@@ -3,6 +3,10 @@ $Id$
 History for relman
 ==================
 
+v0.1.3
+-------------------
++ added prebuild, postbuild and postrun options (for each package)
+
 v0.1.2 (07.08.2007)
 -------------------
 + added distribution targets for [s]deb and [s]rpm via scp and ftp
