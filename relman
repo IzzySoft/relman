@@ -110,7 +110,7 @@ function getopts {
   [ -n "${_mkdeb}" ] && mkdeb=${_mkdeb}
   [ -n "${_mkrpm}" ] && mkrpm=${_mkrpm}
   [ -n "${_mktar}" ] && mktar=${_mktar}
-  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp prerun prebuild postbuild postrun codeget; do
+  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp prerun prebuild postbuild postrun codeget histscp histftp histfile; do
     eval ba=\$"_${varname}"
     [ -n "$ba" ] && eval ${varname}=$ba
     [ "${!varname}" = "0" ] && eval ${varname}=""
@@ -188,7 +188,7 @@ function getprogcfg {
   eval srcdir=\$"${PRG}_srcdir"
   [ -z "$srcdir" ] && srcdir="${pkgroot}/BUILD/${prog}-${version}"
   eval spectpl=\$"${PRG}_spectpl"
-  for varname in buildarch release pkgmakeparms tarftpdir debftpdir sdebftpdir rpmftpdir srpmftpdir mktar mkdeb mkrpm; do
+  for varname in buildarch release pkgmakeparms tarftpdir debftpdir sdebftpdir rpmftpdir srpmftpdir mktar mkdeb mkrpm histscp histftp histftpdir histfile; do
     eval ba=\$"${PRG}_${varname}"
     [ -n "$ba" ] && eval ${varname}=$ba
   done
@@ -222,7 +222,7 @@ function runcmd {
 # $5 : File name
 function ftpxfer {
   say "${blue}* Distributing $1 via FTP$NC"
-  if [ -e $tarfile ]; then
+  if [ -e ${4}/${5} ]; then
     ftptmp=/tmp/ftp.$$
     touch $ftptmp
     echo "open $2">$ftptmp
@@ -498,7 +498,18 @@ export PKGMAKE_USED="relman v${RELMANV}"
   [ -n "$srpmscp" ] && scpxfer "SRPM" ${rpmdir}/${rpmfile} $srpmscp
 }
 
-#-----------------------------------------[ Calling PostRun script (if any) ]---
+#----------------------------------------------------------[ HistFile Dist ]---
+[ -n "$histfile" ] && {
+  [ -n "$histftp" ] && {
+    lfile="/tmp/${prog}.hist"
+    cp $histfile $lfile
+    ftpxfer "HistFile" $histftp $histftpdir /tmp "${prog}.hist"
+    rm -f $lfile
+  }
+  [ -n "$histscp" ] && scpxfer "HistFile" $histfile ${histscp}/${prog}.hist
+}
+
+#----------------------------------------[ Calling PostRun script (if any) ]---
 [ -n "$postrun" ] && {
   say "${blue}* Running post-processing script: $postrun"
   runcmd "$postrun"

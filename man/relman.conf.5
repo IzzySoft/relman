@@ -1,4 +1,4 @@
-.TH "RELMAN.CONF" "5" "17 August 2007"
+.TH "RELMAN.CONF" "5" "19 August 2007"
 .SH "NAME" 
 relman.conf \- Configuration file for \fBrelman\fR, which acts as a frontend
 to pkgmake, offering additional features like file distribution
@@ -149,6 +149,26 @@ Subversion instead.
 \fI0\fR: Nothing. Let pkgmake do the job. Note, that this also means that
 \fB*_prerun\fR and \fB*_prebuild\fR are running at the same position, and all
 changes to the "copy" (using the %b placeholder) will be overwritten by pkgmake.
+
+.IP "\fB*_histfile\fR"
+Location (/path/to/filename) of the history file which is useable for processing
+by the HistView (see http://www.izzysoft.de/?topic=software)
+
+.IP "\fB*_histftp\fR"
+Server to transfer the \fB*_histfile\fR to. This is usually the one where you
+have HistView installed.
+
+.IP "\fB*_histftpdir\fR"
+Directory on the \fB*_histftp\fR server we shall store the \fB*_histfile\fR in.
+Note that the file will always be renamed to \fB*_name\fR.hist on the remote
+server.
+
+.IP "\fB*_histscp\fR"
+server:/path to copy the \fB*_histfile\fR to. This is usually a server where
+you have HistView installed, and the path your servers setup uses to display
+the file. Note that on the remote server the file will always be renamed to
+\fB*_name\fR.hist when relman does the copy.
+
 
 .SH "SEE ALSO" 
 .PP 
