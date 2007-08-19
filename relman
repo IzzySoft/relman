@@ -517,7 +517,7 @@ export PKGMAKE_USED="relman v${RELMANV}"
 
 #----------------------------------------[ Calling PostRun script (if any) ]---
 [ -n "$postrun" ] && {
-  say "${blue}* Running post-processing script: $postrun"
+  say "${blue}* Running post-processing script: ${postrun}$NC"
   runcmd "$postrun"
 }
 
