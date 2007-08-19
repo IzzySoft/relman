@@ -184,6 +184,10 @@ function yesno12 {
   else param=0; fi
 }
 
+function createyesno {
+  [ $2 -eq 1 ] && echo " $1: Yes" || echo " $1: No"
+}
+
 #------------------------------------------------------[ Evaluate Settings ]--
 function getprogcfg {
   eval prog=\$"${PRG}_name"
@@ -343,10 +347,10 @@ tarfile=${pkgroot}/SOURCES/${prog}-${version}.tar.gz
   echo " Version                : $version"
   echo " Release                : $release"
   echo " Source Dir             : $srcdir"
-  echo " Create Tar             : $mktar"
+  createyesno "Create Tar             " $mktar
   echo " BuildArch              : $buildarch"
-  echo " Debian Package         : $mkdeb"
-  echo " RPM                    : $mkrpm"
+  createyesno "Debian Package         " $mkdeb
+  createyesno "RPM                    " $mkrpm
   echo -n " Spec Template          : "
   if [ -z "$spectpl" ]; then echo "${BUILDDEB}/SPECS/${prog}.tpl"
   else echo $spectpl; fi
@@ -362,12 +366,15 @@ tarfile=${pkgroot}/SOURCES/${prog}-${version}.tar.gz
   echo " RPM Distribution (SSH) : $rpmscp"
   echo " SRPM Distribution (FTP): $srpmftp"
   echo " SRPM Distribution (SSH): $srpmscp"
+  echo " HistFile		: $histfile"
+  echo " HistFile Distri. (FTP) : $histftp"
+  echo " HistFile Distri. (SCP) : $histscp"
   echo " PreRun script          : $prerun"
   echo " PreBuild script        : $prebuild"
   echo " PostBuild script       : $postbuild"
   echo " PostRun script         : $postrun"
   echo " Extra parms to pkgmake : $pkgmakeparms"
-  echo " dryrun                 : $dryrun"
+  createyesno "dryrun                 " $dryrun
   [ $yestoall -eq 0 ] && {
     echo -en "${blue}Continue (y/n)? $NC"
     yesno
