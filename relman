@@ -201,13 +201,9 @@ function getprogcfg {
   done
   eval group=\$"${PRG}_group"
   eval section=\$"${PRG}_section"
-  eval prerun=\$"${PRG}_prerun"
-  eval prebuild=\$"${PRG}_prebuild"
-  eval postbuild=\$"${PRG}_postbuild"
-  eval postrun=\$"${PRG}_postrun"
-  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp codeget; do
+  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp codeget postbuild postrun prebuild prerun; do
     eval ba=\$"${PRG}_${varname}"
-    [ -n "$ba" ] && eval ${varname}=$ba
+    [ -n "$ba" ] && eval ${varname}=\"$ba\"
     [ "${!varname}" = "0" ] && eval "${varname}=\"\""
   done
 }
