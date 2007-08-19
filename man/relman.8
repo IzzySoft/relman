@@ -1,4 +1,4 @@
-.TH relman 8 "17 August 2007"
+.TH relman 8 "19 August 2007"
 .IX relman
 .SH NAME
 relman - a frontend to pkgmake with additional features, also doing the distribution
@@ -21,6 +21,9 @@ Possible options:
 .RB [ "-nodebftp" ]
 .RB [ "-nodebscp" ]
 .RB [ "-nodist" ]
+.RB [ "-nohistdist" ]
+.RB [ "-nohistftp" ]
+.RB [ "-nohistscp" ]
 .RB [ "-nopostbuild" ]
 .RB [ "-nopostrun" ]
 .RB [ "-nopprebuild" ]
@@ -97,6 +100,16 @@ Don't distribute anything - just create the packages and exit.
 .IP "\fB-noftp\fR"
 Same as combining -nodebftp -nosdebftp -norpmftp -nosrpmftp -notarftp (nothing
 gets distributed via FTP).
+
+.IP "\fB-nohistdist\fR"
+Don't distribute the HistFile. Same as combining \fB-nohistftp\fR and
+\fB-nohistscp\fR.
+
+.IP "\fB-nohistftp\fR"
+Don't distribute the HistFile via FTP
+
+.IP "\fB-nohistscp\fR"
+Don't distribute the HistFile via SCP
 
 .IP "\fB-nopostbuild\fR"
 Don't run the configured postbuild script

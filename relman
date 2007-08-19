@@ -73,8 +73,11 @@ while [ "$1" != "" ] ; do
     -nodebdist) _debftp=0; _debscp=0;;
     -nodebftp) _debftp=0;;
     -nodebscp) _debscp=0;;
-    -nodist) _tarscp=0; _tarftp=0; _debftp=0; _debscp=0; _sdebftp=0; _sdebscp=0; _rpmftp=0; _rpmscp=0; _srpmftp=0; _srpmscp=0;;
-    -noftp) _tarftp=0; _debftp=0; _sdebftp=0; _rpmftp=0; _srpmftp=0;;
+    -nodist) _tarscp=0; _tarftp=0; _debftp=0; _debscp=0; _sdebftp=0; _sdebscp=0; _rpmftp=0; _rpmscp=0; _srpmftp=0; _srpmscp=0; _histftp=0; _histscp=0;;
+    -nodisthist) _histftp=0; _histscp=0;;
+    -noftp) _tarftp=0; _debftp=0; _sdebftp=0; _rpmftp=0; _srpmftp=0; _histftp=0;;
+    -nohistftp) _histftp=0;;
+    -nohistscp) _histscp=0;;
     -norpm) _mkrpm=0; _rpmftp=0; _rpmscp=0; _srpmftp=0; _srpmscp=0;;
     -norpmdist) _rpmftp=0; _rpmscp=0;;
     -norpmftp) _rpmftp=0;;
