@@ -388,47 +388,49 @@ say "${blue}Preparing ${prog} v${version} for release:${NC}"
 }
 
 #----------------------------------------[ XFer sources to build directory ]---
-say "${blue}* Obtaining the code$NC"
-here=`pwd`
-cd $srcdir
-case $codeget in
-  "cp") runcmd "mkdir -p $builddir"; runcmd "cp -pr * $builddir/";;
-  "cvs") module=`cat $srcdir/CVS/Repository`
-         cvsroot=`cat $srcdir/CVS/Root`
-         [ -z "$module" ] && {
-	   say "${red}  Could not find out the CVS module name. Perhaps the sourcedir is no CVS workdir?$NC"
-	   finito
-	 }
-         runcmd "mkdir -p $builddir";
-	 cd ${pkgroot}/BUILD
-	 cmd="cvs -d $cvsroot export -D now -d ${prog}-${version} $module"
-	 case $SILENT in
-	   1) cmd="$cmd >/dev/null";;
-	   2) cmd="$cmd &>/dev/null";;
-	 esac
-         runcmd "$cmd"
-	 [ $? -gt 0 ] && {
-	   say "${red}  Looks like CVS aborted unnormally. So we do the same.$NC"
-	   finito
-	 }
-	 ;;
-  "svn") runcmd "mkdir -p $builddir";
-         cmd="svn export $srcdir $builddir"
-	 case $SILENT in
-	   1) cmd="$cmd >/dev/null";;
-	   2) cmd="$cmd &>/dev/null";;
-	 esac
-         runcmd "$cmd"
-	 [ $? -gt 0 ] && {
-	   say "${red}  Looks like SVN aborted unnormally. So we do the same.$NC"
-	   finito
-	 }
-	 ;;
-  "")    ;;
-  *) say "${red}  The value specified for codeget ($codeget) is invalid!$NC"
-     finito;;
-esac
-rc=`cd $here`
+if [ "$srcdir" != "$builddir" ]; then
+  say "${blue}* Obtaining the code$NC"
+  here=`pwd`
+  cd $srcdir
+  case $codeget in
+    "cp") runcmd "mkdir -p $builddir"; runcmd "cp -pr * $builddir/";;
+    "cvs") module=`cat $srcdir/CVS/Repository`
+           cvsroot=`cat $srcdir/CVS/Root`
+           [ -z "$module" ] && {
+	     say "${red}  Could not find out the CVS module name. Perhaps the sourcedir is no CVS workdir?$NC"
+	     finito
+	   }
+           runcmd "mkdir -p $builddir";
+           cd ${pkgroot}/BUILD
+	   cmd="cvs -d $cvsroot export -D now -d ${prog}-${version} $module"
+	   case $SILENT in
+	     1) cmd="$cmd >/dev/null";;
+	     2) cmd="$cmd &>/dev/null";;
+	   esac
+           runcmd "$cmd"
+	   [ $? -gt 0 ] && {
+	     say "${red}  Looks like CVS aborted unnormally. So we do the same.$NC"
+	     finito
+	   }
+	   ;;
+    "svn") runcmd "mkdir -p $builddir";
+           cmd="svn export $srcdir $builddir"
+	   case $SILENT in
+	     1) cmd="$cmd >/dev/null";;
+	     2) cmd="$cmd &>/dev/null";;
+	   esac
+           runcmd "$cmd"
+	   [ $? -gt 0 ] && {
+	     say "${red}  Looks like SVN aborted unnormally. So we do the same.$NC"
+	     finito
+	   }
+	   ;;
+    "")    ;;
+    *) say "${red}  The value specified for codeget ($codeget) is invalid!$NC"
+       finito;;
+  esac
+  rc=`cd $here`
+fi
 
 #---------------------------------------[ Calling PreBuild script (if any) ]---
 [ -n "$prebuild" ] && {

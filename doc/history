@@ -3,6 +3,10 @@ $Id$
 History for relman
 ==================
 
+v0.1.4
+-------------------
+* running code XFer only when sourcedir != builddir
+
 v0.1.3 (19.08.2007)
 -------------------
 + added prebuild, postbuild and postrun options (for each package)
