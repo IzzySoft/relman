@@ -60,6 +60,29 @@ ChangeLog will be created. If set to 1, a ChangeLog will be created (and passed
 to pkgmake using the -c switch) if a \fB_histfile\fR has been specified for this
 project as well (and that file exists).
 
+The histfile (see \fB_histfile\fR below) in general must apply to the following
+format rules to be used here:
+
+.RS
+.IP - 3
+Notes for a version must start with a line in the format "v0.1.2 (date)", where
+the "v" is to be taken literally, 0.1.2 is the version number, and "(date)" can
+be omitted (current date will be used in this case - or when an unknown format
+is used).
+.IP - 3
+all lines following that first line until either the next version starter line
+or the end of the file (whatever comes first) belong to this release
+.IP - 3
+release notes start with one of the characters "*" (change), "+" (addition),
+"-" (removal) or "!" (bugfix). This is not important for relman (but for histview),
+but important is to never start any other line with a "v" since this would
+indicate the next versions start. Since in the RPM changelog "*" is used for the
+date line, relman will replace this by "%" here.
+.RE
+
+relman will only include the changes for the version to be released into the RPM
+changelog, all other entries will be ignored.
+
 .IP "\fBtarftp\fR"
 FTP server the tarballs are copied to. relman will log in there using the
 credentials defined in your ~/.netrc file (see \fBman netrc\fR for details).
@@ -107,6 +130,12 @@ Same as \fBtarftpdir\fR, just for the *.srpm files.
 
 .IP \fBsrpmscp\fR
 Target ([user@]server:directory) to copy the *.srpm to via SCP.
+
+.IP \fBhistdate\fR
+Date format used in the histfile (if you want to use the histfile to create a
+changelog for RPM, see \fBmkchangelog\fR). Valid settings are "d.m.Y", "Y-m-d",
+"d/m/Y" and "m/d/Y".
+
 
 .SS "PROJECT SETTINGS"
 For each project, you may override above settings by prefixing them with the

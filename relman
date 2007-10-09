@@ -116,7 +116,7 @@ function getopts {
   [ -n "${_mkdeb}" ] && mkdeb=${_mkdeb}
   [ -n "${_mkrpm}" ] && mkrpm=${_mkrpm}
   [ -n "${_mktar}" ] && mktar=${_mktar}
-  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp prerun prebuild postbuild postrun codeget histscp histftp histfile; do
+  for varname in tarftp tarscp debftp debscp sdebftp sdebscp rpmftp rpmscp srpmftp srpmscp prerun prebuild postbuild postrun codeget histscp histftp histfile histdate; do
     eval ba=\$"_${varname}"
     [ -n "$ba" ] && eval ${varname}=$ba
     [ "${!varname}" = "0" ] && eval ${varname}=""
@@ -198,7 +198,7 @@ function getprogcfg {
   eval srcdir=\$"${PRG}_srcdir"
   [ -z "$srcdir" ] && srcdir="${pkgroot}/BUILD/${prog}-${version}"
   eval spectpl=\$"${PRG}_spectpl"
-  for varname in buildarch release pkgmakeparms tarftpdir debftpdir sdebftpdir rpmftpdir srpmftpdir mktar mkdeb mkrpm histscp histftp histftpdir histfile; do
+  for varname in buildarch release pkgmakeparms tarftpdir debftpdir sdebftpdir rpmftpdir srpmftpdir mktar mkdeb mkrpm histscp histftp histftpdir histfile histdate; do
     eval ba=\$"${PRG}_${varname}"
     [ -n "$ba" ] && eval ${varname}=$ba
   done
@@ -264,6 +264,7 @@ function scpxfer {
 
 #------------------------------------------------------------------[ Exits ]---
 function finito {
+  [ -e "$ChangeLog" ] && rm -f $ChangeLog
   say "${blue}* Done.$NC"
   say
   exit
@@ -383,6 +384,10 @@ tarfile=${pkgroot}/SOURCES/${prog}-${version}.tar.gz
 }
 
 say "${blue}Preparing ${prog} v${version} for release:${NC}"
+[ "$builddir" = "/" ] && {
+  say "${red}Yikes! Your builddir is set to '/' - you do not really mean this?!?$NC"
+  finito
+}
 
 #-----------------------------------------[ Calling PreRun script (if any) ]---
 [ -n "$prerun" ] && {
@@ -394,6 +399,7 @@ say "${blue}Preparing ${prog} v${version} for release:${NC}"
 if [ "$srcdir" != "$builddir" ]; then
   say "${blue}* Obtaining the code$NC"
   here=`pwd`
+  [ -e $builddir ] && rm -rf $builddir
   cd $srcdir
   case $codeget in
     "cp") runcmd "mkdir -p $builddir"; runcmd "cp -pr * $builddir/";;
@@ -416,7 +422,7 @@ if [ "$srcdir" != "$builddir" ]; then
 	     finito
 	   }
 	   ;;
-    "svn") cmd="svn export $srcdir $builddir"
+    "svn") cmd="svn export -q $srcdir $builddir"
 	   case $SILENT in
 	     1) cmd="$cmd >/dev/null";;
 	     2) cmd="$cmd &>/dev/null";;
@@ -449,17 +455,34 @@ if [ $mkchangelog -gt 0 ]; then
     IFS_ORI=$IFS
     IFS="§"
     set -f   # switch off file name expansion - changelog uses "*" at line start!
-    echo "`LANG=C date -u|awk '{print $1" "$2" "$3" "$6}'` $VENDOR">$ChangeLog
     while read line; do
       if [ $hstart -eq 0 ]; then
-        text=`echo $line | awk '{print $1}'`
+        text=`echo $line | awk '{print $1}'`      # version
 	[ "$text" != "v$version" ] && continue
+	text=`echo $line | awk '{print $2}'`      # releasedate
+        if [ -n "$text" ]; then
+          [ "${text:0:1}" = "(" ] && text=${text:1} # strip off brackets
+          len=${#text}-1
+          [ "${text:$len}" = ")" ] && text=${text:0:$len}
+          case $histdate in
+            "d.m.Y") text=`echo $text|awk -F. '{print $3"-"$2"-"$1}'`;;
+            "Y-m-d") text=`echo $text|awk -F- '{print $1"-"$2"-"$3}'`;;
+            "d/m/Y") text=`echo $text|awk -F. '{print $3"-"$2"-"$1}'`;;
+            "m/d/Y") text=`echo $text|awk -F. '{print $3"-"$1"-"$2}'`;;
+            *) text=`LANG=C date +"%Y-m-d"`;;
+          esac
+	  text=`LANG=C date +"%a %b %d %Y" -d $text`
+	  echo "* $text $VENDOR">$ChangeLog
+	else
+          echo "* `LANG=C date +"%a %b %d %Y"` $VENDOR">$ChangeLog
+	fi
 	hstart=1
       else
         [ "${line:0:1}" = "v" ] && break;
         case ${line:0:2} in
 	  "--") continue;;
-	  *) echo $line >>$ChangeLog
+	  '* ') echo "%${line:1}">>$ChangeLog;;
+	  *) echo $line >>$ChangeLog;;
 	esac
       fi
     done<$histfile
@@ -553,9 +576,6 @@ export PKGMAKE_USED="relman v${RELMANV}"
   say "${blue}* Running post-processing script: ${postrun}$NC"
   runcmd "$postrun"
 }
-
-#-----------------------------------------------------------[ Some cleanup ]---
-[ -e "$ChangeLog" ] && rm -f $ChangeLog
 
 #----------------------------------------------------------[ Finished work ]---
 finito
