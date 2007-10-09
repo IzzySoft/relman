@@ -20,6 +20,7 @@ buildarch=noarch
 mktar=1
 mkdeb=1
 mkrpm=0
+mkchangelog=0
 # ftp uses the ~/.netrc file for login information:
 tarftp=upload.sourceforge.net
 tarftpdir=incoming
@@ -41,6 +42,8 @@ prebuild=
 postbuild=
 postrun=
 codeget=cp
+histfile=
+histscp=
 
 BINDIR=${0%/*}				# where this script resides
 dispdetails=1
@@ -413,8 +416,7 @@ if [ "$srcdir" != "$builddir" ]; then
 	     finito
 	   }
 	   ;;
-    "svn") runcmd "mkdir -p $builddir";
-           cmd="svn export $srcdir $builddir"
+    "svn") cmd="svn export $srcdir $builddir"
 	   case $SILENT in
 	     1) cmd="$cmd >/dev/null";;
 	     2) cmd="$cmd &>/dev/null";;
@@ -438,6 +440,34 @@ fi
   runcmd "$prebuild"
 }
 
+#---------------------------------------[ Create a ChangeLog (if possible) ]---
+if [ $mkchangelog -gt 0 ]; then
+  if [ -n "$histfile" ]; then
+    say "${blue}* Creating ChangeLog from HistFile$NC"
+    ChangeLog=/tmp/ChangeLog.$$
+    hstart=0
+    IFS_ORI=$IFS
+    IFS="§"
+    set -f   # switch off file name expansion - changelog uses "*" at line start!
+    echo "`LANG=C date -u|awk '{print $1" "$2" "$3" "$6}'` $VENDOR">$ChangeLog
+    while read line; do
+      if [ $hstart -eq 0 ]; then
+        text=`echo $line | awk '{print $1}'`
+	[ "$text" != "v$version" ] && continue
+	hstart=1
+      else
+        [ "${line:0:1}" = "v" ] && break;
+        case ${line:0:2} in
+	  "--") continue;;
+	  *) echo $line >>$ChangeLog
+	esac
+      fi
+    done<$histfile
+    set +f
+    IFS=$IFS_ORI
+  fi
+fi
+
 #--------------------------------------------------------[ Calling pkgmake ]---
 export PKGMAKE_USED="relman v${RELMANV}"
 [ "${mkdeb}${mkrpm}" != "00" ] && {
@@ -453,6 +483,7 @@ export PKGMAKE_USED="relman v${RELMANV}"
   if [ $mkrpm -gt 0 ]; then cmd="$cmd -rpm"; else cmd="$cmd -norpm"; fi
   [ -n "$group" ] && cmd="$cmd -g \"$group\""
   [ -n "$section" ] && cmd="$cmd -section \"$section\""
+  [ -e "$ChangeLog" ] && cmd="$cmd -c $ChangeLog"
   runcmd "$cmd"
 }
 
@@ -522,6 +553,9 @@ export PKGMAKE_USED="relman v${RELMANV}"
   say "${blue}* Running post-processing script: ${postrun}$NC"
   runcmd "$postrun"
 }
+
+#-----------------------------------------------------------[ Some cleanup ]---
+[ -e "$ChangeLog" ] && rm -f $ChangeLog
 
 #----------------------------------------------------------[ Finished work ]---
 finito

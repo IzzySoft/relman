@@ -1,4 +1,4 @@
-.TH "RELMAN.CONF" "5" "19 August 2007"
+.TH "RELMAN.CONF" "5" "09 October 2007"
 .SH "NAME" 
 relman.conf \- Configuration file for \fBrelman\fR, which acts as a frontend
 to pkgmake, offering additional features like file distribution
@@ -53,6 +53,12 @@ Whether to create Debian *.deb packages (mkdeb=1) or not (mkdeb=0)
 
 .IP "\fBmkrpm\fR"
 Whether to create RPM packages.
+
+.IP "\fBmkchangelog\fR"
+Whether to create a ChangeLog (for RPM) of the released version. If set to 0, no
+ChangeLog will be created. If set to 1, a ChangeLog will be created (and passed
+to pkgmake using the -c switch) if a \fB_histfile\fR has been specified for this
+project as well (and that file exists).
 
 .IP "\fBtarftp\fR"
 FTP server the tarballs are copied to. relman will log in there using the
