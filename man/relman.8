@@ -1,4 +1,4 @@
-.TH relman 8 "19 August 2007"
+.TH relman 8 "10 October 2007"
 .IX relman
 .SH NAME
 relman - a frontend to pkgmake with additional features, also doing the distribution
@@ -40,15 +40,15 @@ Possible options:
 .RB [ "-notardist" ]
 .RB [ "-notarftp" ]
 .RB [ "-notarscp" ]
-.RB [ "-p" " <\fI'pkgmake parms'\fR>" ]
-.RB [ "-postbuild <\fIscript\fR>" ]
-.RB [ "-postrun <\fIscript\fR>" ]
-.RB [ "-prebuild <\fIscript\fR>" ]
-.RB [ "-prerun <\fIscript\fR>" ]
+.RB [ "-p" " \fI'pkgmake parms'\fR" ]
+.RB [ "-postbuild \fIscript\fR" ]
+.RB [ "-postrun \fIscript\fR" ]
+.RB [ "-prebuild \fIscript\fR" ]
+.RB [ "-prerun \fIscript\fR" ]
 .RB [ "-q" ]
-.RB [ "-r" " <\fIrelease\fR>" ]
+.RB [ "-r" " \fIrelease\fR" ]
 .RB [ "-rpm" ]
-.RB [ "-t" " <\fIspecfile\fR>" ]
+.RB [ "-t" " \fIspecfile\fR" ]
 .RB [ "-y" ]
 
 .SH DESCRIPTION
@@ -231,6 +231,39 @@ the order of preference: relman first takes the configuration inside the script
 itself, and then looks for ~/.relman/relman.conf - if found, this is used. If it
 is not found, it looks for the /etc/relman/relman.conf and uses this file (if
 found) to overwrite the default settings.
+
+.SH MESSAGES AND EXIT CALLS
+relman uses the following exit codes:
+
+.TP
+Code
+Description
+.TP
+0
+Everything went fine - or the user (= you) decided to answer "N" to some question
+on whether to continue
+.TP
+2
+The file /etc/pkgmake/version was not found - i.e. pkgmake is not installed on
+the system. Since relman depends on pkgmake, the solution is obvious: Install
+pkgmake and try again.
+.TP
+3
+The configured CVS module does not exist (check spelling etc.)
+.TP
+4
+The option specified for \fBcodeget\fR (or \fB*_codeget\fR) is invalid. See
+\fBman relman.conf\fR for available values to this option.
+.TP
+7
+Your builddir is misconfigured. It either points directly to "/" (which should
+never happen unless the relman script itself is broken) or, more likely, starts
+with "/BUILD/" - which means your \fBpkgroot\fR is not set (see \fBman relman.conf\fR
+for details on that configuration option).
+.TP
+20
+CVS or SVN exited abnormally while trying to retrieve the code. No idea why, so
+you have to run the whole thing manually and watch the output on screen.
 
 .SH "FILES"
 /usr/bin/relman

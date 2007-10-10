@@ -8,6 +8,7 @@ v0.1.4
 * running code XFer only when sourcedir != builddir
 + new config option "mkchangelog" to create a ChangeLog (for RPM) out of the
   projects _histfile (as long as that is specified as well and exists)
+* edited exit codes and added them also to the man pages
 
 v0.1.3 (19.08.2007)
 -------------------

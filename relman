@@ -263,11 +263,12 @@ function scpxfer {
 }
 
 #------------------------------------------------------------------[ Exits ]---
+# $1 : Exit code (optional)
 function finito {
   [ -e "$ChangeLog" ] && rm -f $ChangeLog
   say "${blue}* Done.$NC"
   say
-  exit
+  exit $1
 }
 
 #------------------------------------------------------[ Check for pkgmake ]---
@@ -282,7 +283,7 @@ else
   say "that there's nothing I can do."
   say "More information can be obtained at http://www.izzysoft.de/?topic=software$NC"
   say
-  finito
+  finito 2
 fi
 
 #======================================================[ Interactive Start ]===
@@ -386,7 +387,13 @@ tarfile=${pkgroot}/SOURCES/${prog}-${version}.tar.gz
 say "${blue}Preparing ${prog} v${version} for release:${NC}"
 [ "$builddir" = "/" ] && {
   say "${red}Yikes! Your builddir is set to '/' - you do not really mean this?!?$NC"
-  finito
+  finito 7
+}
+[ "${builddir:0:7}" = "/BUILD/" ] && {
+  say "${red}Yikes! Your builddir is set to '/BUILD/*'??? Sure you put your build"
+  say "environment directly into the root? Looks more like your setting for"
+  say "pkgroot is messed up. You need to fix this first.$NC"
+  finito 7
 }
 
 #-----------------------------------------[ Calling PreRun script (if any) ]---
@@ -407,7 +414,7 @@ if [ "$srcdir" != "$builddir" ]; then
            cvsroot=`cat $srcdir/CVS/Root`
            [ -z "$module" ] && {
 	     say "${red}  Could not find out the CVS module name. Perhaps the sourcedir is no CVS workdir?$NC"
-	     finito
+	     finito 3
 	   }
            runcmd "mkdir -p $builddir";
            cd ${pkgroot}/BUILD
@@ -419,7 +426,7 @@ if [ "$srcdir" != "$builddir" ]; then
            runcmd "$cmd"
 	   [ $? -gt 0 ] && {
 	     say "${red}  Looks like CVS aborted unnormally. So we do the same.$NC"
-	     finito
+	     finito 20
 	   }
 	   ;;
     "svn") cmd="svn export -q $srcdir $builddir"
@@ -430,12 +437,13 @@ if [ "$srcdir" != "$builddir" ]; then
            runcmd "$cmd"
 	   [ $? -gt 0 ] && {
 	     say "${red}  Looks like SVN aborted unnormally. So we do the same.$NC"
-	     finito
+	     finito 20
 	   }
 	   ;;
     "")    ;;
     *) say "${red}  The value specified for codeget ($codeget) is invalid!$NC"
-       finito;;
+       finito 4
+       ;;
   esac
   rc=`cd $here`
 fi
