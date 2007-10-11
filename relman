@@ -62,6 +62,23 @@ function say {
   [ $SILENT -lt 3 ] && echo -e "$1"
 }
 
+#---------------------------------------------------[ Output script header ]---
+function header {
+  [ $SILENT -lt 3 ] && clear
+  say "${blue}relman v${RELMANV}"
+  say "-------------$NC"
+  say
+}
+
+#------------------------------------------------------------------[ Exits ]---
+# $1 : Exit code (optional)
+function finito {
+  [ -e "$ChangeLog" ] && rm -f $ChangeLog
+  say "${blue}* Done.$NC"
+  say
+  exit $1
+}
+
 #----------------------------------------------[ List configured projects ]---
 function list_projects {
   typeset -i idx=0
@@ -87,15 +104,50 @@ function list_projects {
   done
   rm -f $TMP1 $TMP2
   say
+  finito
 }
 
-#------------------------------------------------------------------[ Exits ]---
-# $1 : Exit code (optional)
-function finito {
-  [ -e "$ChangeLog" ] && rm -f $ChangeLog
-  say "${blue}* Done.$NC"
+#-----------------------------------------------------------[ Display help ]---
+function show_help {
+  header
+  say "Syntax:"
+  say "  relman"
+  say "  relman --help | --list"
+  say "  relman <ProjectName> <Version> [Options]"
   say
-  exit $1
+  say "Options:"
+  say "  Options can be used to override what you configured for the project."
+  say "  Details can be found in the man page (man relman). Available options include:"
+  say
+  printf "%24s : %-55s\n" "-codeget" "How to retrieve the source code"
+  printf "%24s : %-55s\n" "-[no]deb" "[Don't] create Debian package"
+  printf "%24s : %-55s\n" "-dryrun" "Don't execute anything, just show what would be done."
+  printf "%24s : %-55s\n" "-nodebdist" "Don't distribute the Debian package at all"
+  printf "%24s : %-55s\n" "-nodeb[ftp|scp]" "Don't distribute the Debian package via FTP|SCP"
+  printf "%24s : %-55s\n" "-nodist" "Don't distribute anything, just build"
+  printf "%24s : %-55s\n" "-nodisthist" "Don't distribute the history file at all"
+  printf "%24s : %-55s\n" "-noftp" "Don't distribute anything to the FTP targets"
+  printf "%24s : %-55s\n" "-nohist[ftp|scp]" "Don't distribute the history file via FTP|SCP"
+  printf "%24s : %-55s\n" "-[no]rpm" "[Don't] create the [S]RPM package(s)"
+  printf "%24s : %-55s\n" "-norpmdist" "Don't distribute the RPM package at all"
+  printf "%24s : %-55s\n" "-norpm[ftp|scp]" "Don't distribute the RPM package via FTP|SCP"
+  printf "%24s : %-55s\n" "-noscp" "Don't distribute anything via SCP"
+  printf "%24s : %-55s\n" "-nosdebdist" "Don't distribute the SDEB package at all"
+  printf "%24s : %-55s\n" "-nosdeb[ftp|scp]" "Don't distribute the SDEB package via FTP|SCP"
+  printf "%24s : %-55s\n" "-notar" "Don't create the tarball (assume it already exists)"
+  printf "%24s : %-55s\n" "-notardist" "Don't distribute the tarball at all"
+  printf "%24s : %-55s\n" "-notar[ftp|scp]" "Don't distribute the tarball via FTP|SCP"
+  printf "%24s : %-55s\n" "-nopre[run|build]" "Don't run the prerun|prebuild script"
+  printf "%24s : %-55s\n" "-nopost[run|build]" "Don't run the postrun|postbuild script"
+  printf "%24s : %-55s\n" "-p <parms>" "Pass parameters to pkgmake"
+  printf "%24s : %-55s\n" "-pre[run|build] <script>" "Run specified script as prerun|prebuild"
+  printf "%24s : %-55s\n" "-post[run|build] <script>" "Run specified script as postrun|postbuild"
+  printf "%24s : %-55s\n" "-q" "Increase silence factor"
+  printf "%24s : %-55s\n" "-r <release>" "Change the release name"
+  printf "%24s : %-55s\n" "-t <name>" "Specify different template name"
+  printf "%24s : %-55s\n" "-y" "Assume Yes to all questions"
+  say
+  finito
 }
 
 #----------------------------------------------[ Read config file (if any) ]---
@@ -148,7 +200,8 @@ while [ "$1" != "" ] ; do
     -rpm) _mkrpm=1;;
     -t) shift; _spectpl="${BUILDDEB}/SPECS/$1";;
     -y) yestoall=1;;
-    --list) list_projects; finito;;
+    --help) show_help;;
+    --list) list_projects;;
   esac
   shift
 done
@@ -180,14 +233,6 @@ function stayorgo {
     exit 0
   }
   echo
-}
-
-#---------------------------------------------------[ Output script header ]---
-function header {
-  [ $SILENT -lt 3 ] && clear
-  say "${blue}relman v${RELMANV}"
-  say "-------------$NC"
-  say
 }
 
 #---------------------------------------[ Ask Parm vals ($1/$2 not passed) ]---
