@@ -6,7 +6,7 @@ relman - a frontend to pkgmake with additional features, also doing the distribu
 .SH SYNOPSIS
 .B relman
 
-.B relman --list
+\fBrelman --help\fR|\fB--list\fR
 
 .B relman
 .RB "\fIPackageName\fR"
@@ -14,7 +14,7 @@ relman - a frontend to pkgmake with additional features, also doing the distribu
 .RB [ "options" ]
 
 Possible options:
-.RB [ "-codeget <\fImethod\fR>" ]
+.RB [ "-codeget \fImethod\fR" ]
 .RB [ "-deb" ]
 .RB [ "-dryrun" ]
 .RB [ "-nodeb" ]
@@ -181,27 +181,27 @@ Don't distribute the tarball via FTP
 .IP "\fB-notarscp\fR"
 Don't distribute the tarball via SCP
 
-.IP "\fB-p\fR <\fI'pkgmake parms'\fR>"
+.IP "\fB-p\fR \fI'pkgmake parms'\fR"
 If there's anything else you want to pass to pkgmake that is not covered by
 relmans parameter, you can pass it here.
 
-.IP "\fB-postbuild\fR <\fIscript\fR>"
+.IP "\fB-postbuild\fR \fIscript\fR"
 Script to run after the build process, but before doing the distribution (i.e.
 immediately after returning from pkgmake). This can be the name of a shell
 script, or any Bash commands (enclosed in quotes).
 
-.IP "\fB-postrun\fR <\fIscript\fR>"
+.IP "\fB-postrun\fR \fIscript\fR"
 Script to run at the very end of the entire process. This can be the name
 of a shell script, or any Bash commands (enclosed in quotes). Note that this
 script will not be executed if you decide not to distribute your release. Yeah,
 right: You don't give us your release - so you get punished. A little. Somehow.
 
-.IP "\fB-prebuild\fR <\fIscript\fR>"
+.IP "\fB-prebuild\fR \fIscript\fR"
 Script to run after the code copy (see \fB-codeget\fR), but before entering the
 build process (i.e. immediately before calling pkgmake). This can be the name
 of a shell script, or any Bash commands (enclosed in quotes).
 
-.IP "\fB-prerun\fR <\fIscript\fR>"
+.IP "\fB-prerun\fR \fIscript\fR"
 Script to run at the very beginning of the entire process. This can be the name
 of a shell script, or any Bash commands (enclosed in quotes).
 
@@ -211,13 +211,13 @@ one call (starting from the 3rd time, it will simply be ignored): One -q
 suppresses the load of STDOUT from the build process. The second -q
 additionally suppresses its still talkative STDERR.
 
-.IP "\fB-r\fR <\fIrelease\fR>"
+.IP "\fB-r\fR \fIrelease\fR"
 Use a different release of the same version.
 
 .IP "\fB-rpm\fR"
 Make *.rpm even if config says MKRPM=0
 
-.IP "\fB-t\fR <\fIspecfile\fR>"
+.IP "\fB-t\fR \fIspecfile\fR"
 Template file to use for the *.spec file. This file must be in the SPEC/
 directory of your Build environment. If your directory tree is already arranged
 the same way as the installation would be, you can use the alldirs.tpl (so all
@@ -230,6 +230,9 @@ details).
 .IP "\fB-y\fR"
 Don't ask me stupid questions - of course I am sure, I know what I'm doing! So
 answer yourself "Yes" to all!
+
+.IP \fB--help\fR
+Display some help (list syntax and available options) and exit.
 
 .IP \fB--list\fR
 List all configured packages (PackageName and full name along) and exit.
@@ -285,6 +288,11 @@ you have to run the whole thing manually and watch the output on screen.
 
 .SH "SEE ALSO"
 relman.conf(5)
+
+http://projects.izzysoft.de/?topic=progs;subject=relman (Project page)
+
+http://projects.izzysoft.de/?topic=trac;subject=relman (Project Trac page:
+report bugs and feature requests here, find out about latest development)
 
 .SH "AUTHOR" 
 .PP 
