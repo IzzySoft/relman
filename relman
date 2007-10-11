@@ -57,6 +57,47 @@ blue='\e[0;34m'
 blink='\E[5m'
 NC='\e[0m'              # No Color
 
+#-----------------------------------------------[ Show progress (or don't) ]---
+function say {
+  [ $SILENT -lt 3 ] && echo -e "$1"
+}
+
+#----------------------------------------------[ List configured projects ]---
+function list_projects {
+  typeset -i idx=0
+  local TMP1=/tmp/relman1_$$
+  local TMP2=/tmp/relman2_$$
+  say "${blue}Configured projects:"
+  say "--------------------$NC"
+  say
+  printf "%-15s : %20s \n" "Name" "Project"
+  echo "----------------+----------------------"
+  cat /etc/relman/relman.conf 2>&1 | sed -n '/[^_]*_name\=/p' >$TMP1
+  cat ~/.relman/relman.conf 2>&1 | sed -n '/[^_]*_name\=/p' >>$TMP1
+  cat $TMP1 | sort > $TMP2
+  cat $TMP2 | while read line; do
+    name=`echo $line|awk -F_ '{print $1}'`
+    [ "${name:0:1}" = "#" ] && continue
+    desc=`echo $line|awk -F= '{print $2}'`
+    [ "${desc:0:1}" = '"' ] && desc=${desc:1}
+    [ "${desc:${#desc}-1:1}" = '"' ] && desc=${desc:0:${#desc}-1}
+    [ "${desc:0:1}" = "'" ] && desc=${desc:1}
+    [ "${desc:${#desc}-1:1}" = "'" ] && desc=${desc:0:${#desc}-1}
+    printf "%-15s : %20s \n" $name $desc
+  done
+  rm -f $TMP1 $TMP2
+  say
+}
+
+#------------------------------------------------------------------[ Exits ]---
+# $1 : Exit code (optional)
+function finito {
+  [ -e "$ChangeLog" ] && rm -f $ChangeLog
+  say "${blue}* Done.$NC"
+  say
+  exit $1
+}
+
 #----------------------------------------------[ Read config file (if any) ]---
 [ -f /etc/relman/version ] && . /etc/relman/version
 [ -f /etc/relman/relman.conf ] && . /etc/relman/relman.conf
@@ -65,7 +106,7 @@ NC='\e[0m'              # No Color
 #-------------------------------------------[ process command line options ]---
 typeset -i SILENT=0
 [ "${1:0:1}" != "-" ] && PRG=$1
-[ "${1:0:1}" != "-" ] && version=$2
+[ "${2:0:1}" != "-" ] && version=$2
 
 while [ "$1" != "" ] ; do
   case "$1" in
@@ -107,6 +148,7 @@ while [ "$1" != "" ] ; do
     -rpm) _mkrpm=1;;
     -t) shift; _spectpl="${BUILDDEB}/SPECS/$1";;
     -y) yestoall=1;;
+    --list) list_projects; finito;;
   esac
   shift
 done
@@ -123,11 +165,6 @@ function getopts {
   done
   [ -n "${_pkgmakeparms}" ] && pkgmakeparms=${_pkgmakeparms}
   [ -n "${_spectpl}" ] && spectpl=${_spectpl}
-}
-
-#-----------------------------------------------[ Show progress (or don't) ]---
-function say {
-  [ $SILENT -lt 3 ] && echo -e "$1"
 }
 
 #------------------[ Read one char user input and convert it to lower case ]---
