@@ -571,7 +571,7 @@ if [ $mkchangelog -gt 0 ]; then
         [ "${line:0:1}" = "v" ] && break;
         case ${line:0:2} in
 	  "--") continue;;
-	  '* ') echo "%${line:1}">>$ChangeLog;;
+	  '+ '|'! '|'* ') echo "-${line:1}">>$ChangeLog;;
 	  *) echo $line >>$ChangeLog;;
 	esac
       fi
