@@ -3,7 +3,7 @@ $Id$
 History for relman
 ==================
 
-v0.1.4
+v0.1.4 (17.03.2008)
 -------------------
 * running code XFer only when sourcedir != builddir
 + new config option "mkchangelog" to create a ChangeLog (for RPM) out of the
