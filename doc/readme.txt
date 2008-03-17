@@ -12,7 +12,7 @@ Contents
 1) Copyright and warranty
 2) Requirements
 3) Limitations
-4) What is pkgmake, and what does it do?
+4) What is relman, and what does it do?
 5) Installation
 6) Usage
 7) Additional information
@@ -23,8 +23,8 @@ Contents
 -------------------------
 
 This little program is (c)opyrighted by Andreas Itzchak Rehberg
-(devel@izzysoft.de) and protected by the GNU Public License Version 2 (GPL).
-For details on the License see the file LICENSE in this directory. The
+(devel AT izzysoft DOT de) and protected by the GNU Public License Version 2
+(GPL). For details on the License see the file LICENSE in this directory. The
 contents of this archive may only be distributed all together.
 
 ===============================================================================
@@ -119,3 +119,6 @@ or the project page on Freshmeat:
 On the first mentioned page, you will also find more information about other
 programs written by the author - as you will on Freshmeat when visiting
   http://freshmeat.net/~izzysoft/
+
+To file a bug report, feature request or simply have a look at the current
+development, please visit http://projects.izzysoft.de/?topic=trac;subject=relman
