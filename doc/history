@@ -3,6 +3,10 @@ $Id$
 History for relman
 ==================
 
+v0.1.5
+-------------------
++ adding xfer via RSync
+
 v0.1.4 (17.03.2008)
 -------------------
 * running code XFer only when sourcedir != builddir

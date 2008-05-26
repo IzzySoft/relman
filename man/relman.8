@@ -21,10 +21,12 @@ Possible options:
 .RB [ "-noftp" ]
 .RB [ "-nodebdist" ]
 .RB [ "-nodebftp" ]
+.RB [ "-nodebrsync" ]
 .RB [ "-nodebscp" ]
 .RB [ "-nodist" ]
 .RB [ "-nohistdist" ]
 .RB [ "-nohistftp" ]
+.RB [ "-nohistrsync" ]
 .RB [ "-nohistscp" ]
 .RB [ "-nopostbuild" ]
 .RB [ "-nopostrun" ]
@@ -33,14 +35,18 @@ Possible options:
 .RB [ "-norpm" ]
 .RB [ "-norpmdist" ]
 .RB [ "-norpmftp" ]
+.RB [ "-norpmrsync" ]
 .RB [ "-norpmscp" ]
+.RB [ "-norsync" ]
 .RB [ "-noscp" ]
 .RB [ "-nosdebdist" ]
 .RB [ "-nosdebftp" ]
+.RB [ "-nosdebrsync" ]
 .RB [ "-nosdebscp" ]
 .RB [ "-notar" ]
 .RB [ "-notardist" ]
 .RB [ "-notarftp" ]
+.RB [ "-notarrsync" ]
 .RB [ "-notarscp" ]
 .RB [ "-p" " \fI'pkgmake parms'\fR" ]
 .RB [ "-postbuild \fIscript\fR" ]
@@ -98,6 +104,9 @@ Don't distribute *.[s]deb - same as -nodebscp -nodebftp -nosdebscp -nosdebftp
 .IP "\fB-nodebftp\fR"
 Don't distribute *.[s]deb via FTP
 
+.IP "\fB-nodebrsync\fR"
+Don't distribute *.[s]deb via RSync
+
 .IP "\fB-nodebscp\fR"
 Don't distribute *.[s]deb via SCP
 
@@ -114,6 +123,9 @@ Don't distribute the HistFile. Same as combining \fB-nohistftp\fR and
 
 .IP "\fB-nohistftp\fR"
 Don't distribute the HistFile via FTP
+
+.IP "\fB-nohistrsync\fR"
+Don't distribute the HistFile via RSync
 
 .IP "\fB-nohistscp\fR"
 Don't distribute the HistFile via SCP
@@ -139,6 +151,9 @@ Don't distribute *.rpm (same as -norpmftp -norpmftp)
 .IP "\fB-norpmftp\fR"
 Don't distribute *.rpm via FTP
 
+.IP "\fB-norpmrsync\fR"
+Don't distribute *.rpm via RSync
+
 .IP "\fB-norpmscp\fR"
 Don't distribute *.rpm via SCP
 
@@ -152,20 +167,14 @@ Don't distribute *.sdeb (same as -nosdebftp -nosdebscp)
 .IP "\fB-nosdebftp\fR"
 Don't distribute *.sdeb via FTP
 
+.IP "\fB-nosdebrsync\fR"
+Don't distribute *.sdeb via RSync
+
 .IP "\fB-nosdebscp\fR"
 Don't distribute *.sdeb via SCP
 
 .IP "\fB-noscp\fR"
 Don't distribute via SCP at all (same as combining all -no*scp parameters)
-
-.IP "\fB-nosdebdist\fR"
-Don't distribute the *.sdeb file (-nosdebftp -nosdebscp)
-
-.IP "\fB-nosdebftp\fR"
-Don't distribute the *.sdeb file via FTP
-
-.IP "\fB-nosdebscp\fR"
-Don't distribute the *.sdeb file via SCP
 
 .IP "\fB-notar\fR"
 Don't create tarball from the sources. This means, that the source tarball
@@ -177,6 +186,9 @@ Don't distribute the tarball (-notarftp -notarscp)
 
 .IP "\fB-notarftp\fR"
 Don't distribute the tarball via FTP
+
+.IP "\fB-notarrsync\fR"
+Don't distribute the tarball via RSync
 
 .IP "\fB-notarscp\fR"
 Don't distribute the tarball via SCP

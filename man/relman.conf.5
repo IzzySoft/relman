@@ -95,6 +95,9 @@ Target directory on the FTP server, where the tarball should be put to.
 .IP \fBtarscp\fR
 Target ([user@]server:directory) to copy the tarball to via SCP.
 
+.IP \fBtarrsync\fR
+Target ([user@]server:directory) to copy the tarball to via RSync (using SSH).
+
 .IP \fBdebftp\fR
 Same as \fBtarftp\fR, just for the *.deb files.
 
@@ -103,6 +106,9 @@ Target directory on the FTP server, where the *.deb should be put to.
 
 .IP \fBdebscp\fR
 Target ([user@]server:directory) to copy the *.deb to via SCP.
+
+.IP \fBdebrsync\fR
+Target ([user@]server:directory) to copy the *.deb to via RSync (using SSH).
 
 .IP \fBsdebftp\fR
 Same as \fBtarftp\fR, just for the *.sdeb files.
@@ -113,6 +119,9 @@ Same as \fBtarftpdir\fR, just for the *.sdeb files.
 .IP \fBsdebscp\fR
 Target ([user@]server:directory) to copy the *.sdeb to via SCP.
 
+.IP \fBsdebrsync\fR
+Target ([user@]server:directory) to copy the *.sdeb to via RSync (using SSH).
+
 .IP \fBrpmftp\fR
 Same as \fBtarftp\fR, just for the *.rpm files.
 
@@ -122,6 +131,9 @@ Same as \fBtarftpdir\fR, just for the *.rpm files.
 .IP \fBrpmscp\fR
 Target ([user@]server:directory) to copy the *.rpm to via SCP.
 
+.IP \fBrpmrsync\fR
+Target ([user@]server:directory) to copy the *.rpm to via RSync (using SSH).
+
 .IP \fBsrpmftp\fR
 Same as \fBtarftp\fR, just for the *.srpm files.
 
@@ -130,6 +142,9 @@ Same as \fBtarftpdir\fR, just for the *.srpm files.
 
 .IP \fBsrpmscp\fR
 Target ([user@]server:directory) to copy the *.srpm to via SCP.
+
+.IP \fBsrpmrsync\fR
+Target ([user@]server:directory) to copy the *.srpm to via RSync (using SSH).
 
 .IP \fBhistdate\fR
 Date format used in the histfile (if you want to use the histfile to create a
@@ -197,6 +212,11 @@ have HistView installed.
 Directory on the \fB*_histftp\fR server we shall store the \fB*_histfile\fR in.
 Note that the file will always be renamed to \fB*_name\fR.hist on the remote
 server.
+
+.IP "\fB*_histrsync\fR"
+server:/path to sync the \fB*_histfile\fR to. This is usually a server where
+you have HistView installed, and the path your servers setup uses to display
+the file.
 
 .IP "\fB*_histscp\fR"
 server:/path to copy the \fB*_histfile\fR to. This is usually a server where
