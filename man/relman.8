@@ -23,6 +23,7 @@ Possible options:
 .RB [ "-nodebftp" ]
 .RB [ "-nodebrsync" ]
 .RB [ "-nodebscp" ]
+.RB [ "-nodebsftp" ]
 .RB [ "-nodist" ]
 .RB [ "-nohistdist" ]
 .RB [ "-nohistftp" ]
@@ -37,17 +38,20 @@ Possible options:
 .RB [ "-norpmftp" ]
 .RB [ "-norpmrsync" ]
 .RB [ "-norpmscp" ]
+.RB [ "-norpmsftp" ]
 .RB [ "-norsync" ]
 .RB [ "-noscp" ]
 .RB [ "-nosdebdist" ]
 .RB [ "-nosdebftp" ]
 .RB [ "-nosdebrsync" ]
 .RB [ "-nosdebscp" ]
+.RB [ "-nosdebsftp" ]
 .RB [ "-notar" ]
 .RB [ "-notardist" ]
 .RB [ "-notarftp" ]
 .RB [ "-notarrsync" ]
 .RB [ "-notarscp" ]
+.RB [ "-notarsftp" ]
 .RB [ "-p" " \fI'pkgmake parms'\fR" ]
 .RB [ "-postbuild \fIscript\fR" ]
 .RB [ "-postrun \fIscript\fR" ]
@@ -110,6 +114,9 @@ Don't distribute *.[s]deb via RSync
 .IP "\fB-nodebscp\fR"
 Don't distribute *.[s]deb via SCP
 
+.IP "\fB-nodebsftp\fR"
+Don't distribute *.[s]deb via SFTP
+
 .IP "\fB-nodist\fR"
 Don't distribute anything - just create the packages and exit.
 
@@ -157,6 +164,9 @@ Don't distribute *.rpm via RSync
 .IP "\fB-norpmscp\fR"
 Don't distribute *.rpm via SCP
 
+.IP "\fB-norpmsftp\fR"
+Don't distribute *.rpm via SFTP
+
 .IP "\fB-noscp\fR"
 Pendant to -noftp: Nothing gets distributed via SCP (includes -nodebscp,
 -notarscp, etc.pp.)
@@ -173,8 +183,14 @@ Don't distribute *.sdeb via RSync
 .IP "\fB-nosdebscp\fR"
 Don't distribute *.sdeb via SCP
 
+.IP "\fB-nosdebsftp\fR"
+Don't distribute *.sdeb via SFTP
+
 .IP "\fB-noscp\fR"
 Don't distribute via SCP at all (same as combining all -no*scp parameters)
+
+.IP "\fB-nosftp\fR"
+Same as combining \fB-noftp\fR - just for SFTP
 
 .IP "\fB-notar\fR"
 Don't create tarball from the sources. This means, that the source tarball
@@ -192,6 +208,9 @@ Don't distribute the tarball via RSync
 
 .IP "\fB-notarscp\fR"
 Don't distribute the tarball via SCP
+
+.IP "\fB-notarsftp\fR"
+Don't distribute the tarball via SFTP
 
 .IP "\fB-p\fR \fI'pkgmake parms'\fR"
 If there's anything else you want to pass to pkgmake that is not covered by

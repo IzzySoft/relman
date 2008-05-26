@@ -92,6 +92,12 @@ given project, set the server here and specify *_tarftp=0 for the project.
 .IP "\fBtarftpdir\fR"
 Target directory on the FTP server, where the tarball should be put to.
 
+.IP "\fBtarsftp\fR"
+Similar to \fBtarftp\fR for SFTP - but the syntax here is like for \fBtarscp\fR below.
+
+.IP "\fBtarsftpdir\fR"
+Target directory on the SFTP server, where the tarball should be put to.
+
 .IP \fBtarscp\fR
 Target ([user@]server:directory) to copy the tarball to via SCP.
 
@@ -101,8 +107,14 @@ Target ([user@]server:directory) to copy the tarball to via RSync (using SSH).
 .IP \fBdebftp\fR
 Same as \fBtarftp\fR, just for the *.deb files.
 
+.IP \fBdebsftp\fR
+Same as \fBtarsftp\fR, just for the *.deb files.
+
 .IP \fBdebftpdir\fR
 Target directory on the FTP server, where the *.deb should be put to.
+
+.IP \fBdebsftpdir\fR
+Target directory on the SFTP server, where the *.deb should be put to.
 
 .IP \fBdebscp\fR
 Target ([user@]server:directory) to copy the *.deb to via SCP.
@@ -116,6 +128,12 @@ Same as \fBtarftp\fR, just for the *.sdeb files.
 .IP \fBsdebftpdir\fR
 Same as \fBtarftpdir\fR, just for the *.sdeb files.
 
+.IP \fBsdebsftp\fR
+Same as \fBtarsftp\fR, just for the *.sdeb files.
+
+.IP \fBsdebsftpdir\fR
+Same as \fBtarsftpdir\fR, just for the *.sdeb files.
+
 .IP \fBsdebscp\fR
 Target ([user@]server:directory) to copy the *.sdeb to via SCP.
 
@@ -128,6 +146,12 @@ Same as \fBtarftp\fR, just for the *.rpm files.
 .IP \fBrpmftpdir\fR
 Same as \fBtarftpdir\fR, just for the *.rpm files.
 
+.IP \fBrpmsftp\fR
+Same as \fBtarsftp\fR, just for the *.rpm files.
+
+.IP \fBrpmsftpdir\fR
+Same as \fBtarsftpdir\fR, just for the *.rpm files.
+
 .IP \fBrpmscp\fR
 Target ([user@]server:directory) to copy the *.rpm to via SCP.
 
@@ -139,6 +163,12 @@ Same as \fBtarftp\fR, just for the *.srpm files.
 
 .IP \fBsrpmftpdir\fR
 Same as \fBtarftpdir\fR, just for the *.srpm files.
+
+.IP \fBsrpmsftp\fR
+Same as \fBtarsftp\fR, just for the *.srpm files.
+
+.IP \fBsrpmsftpdir\fR
+Same as \fBtarsftpdir\fR, just for the *.srpm files.
 
 .IP \fBsrpmscp\fR
 Target ([user@]server:directory) to copy the *.srpm to via SCP.

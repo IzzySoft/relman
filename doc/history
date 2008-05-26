@@ -5,7 +5,8 @@ History for relman
 
 v0.1.5
 -------------------
-+ adding xfer via RSync
++ added xfer via RSync
++ added xfer via sFTP
 
 v0.1.4 (17.03.2008)
 -------------------
