@@ -7,6 +7,9 @@ v0.1.5
 -------------------
 + added xfer via RSync
 + added xfer via sFTP
+* initial output of configuration changed - it got to long, so now we only
+  display those variables really set
++ the descfile is now passed to pkgmake (if specified)
 
 v0.1.4 (17.03.2008)
 -------------------

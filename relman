@@ -318,6 +318,11 @@ function getprogcfg {
   eval srcdir=\$"${PRG}_srcdir"
   [ -z "$srcdir" ] && srcdir="${pkgroot}/BUILD/${prog}-${version}"
   eval spectpl=\$"${PRG}_spectpl"
+  eval descfile=\$"${PRG}_descfile"
+  [ -n "$descfile" -a ! -e "$descfile" ] && {
+    echo -e "${red}Specified DescFile ($descfile) does not exist and thus will be skipped.$NC\n"
+    descfile=
+  }
   for varname in buildarch release pkgmakeparms tarftpdir tarsftpdir debftpdir debsftpdir sdebftpdir sdebsftpdir rpmftpdir rpmsftpdir srpmftpdir srpmsftpdir mktar mkdeb mkrpm histscp histrsync histftp histftpdir histfile histdate; do
     eval ba=\$"${PRG}_${varname}"
     [ -n "$ba" ] && eval ${varname}=$ba
@@ -489,52 +494,62 @@ done
 tarfile=${pkgroot}/SOURCES/${prog}-${version}.tar.gz
 
 #=====================================================[ Processing Package ]===
+# Printout configuration details
+# $1: setting
+# $2: display name
+function dispdetail() {
+  [ -n "$1" ] && {
+    printf " %-25s: %-15s\n" "$2" "$1"
+  }
+}
+
 #-----------------------[ Input verification (only when called w/o params) ]---
 [ $dispdetails -eq 1 ] && {
   echo -e "${blue}Processing the following details:$NC"
-  echo " Program                : $prog"
-  echo " Version                : $version"
-  echo " Release                : $release"
-  echo " Source Dir             : $srcdir"
-  createyesno "Create Tar             " $mktar
-  echo " BuildArch              : $buildarch"
-  createyesno "Debian Package         " $mkdeb
-  createyesno "RPM                    " $mkrpm
-  echo -n " Spec Template          : "
+  dispdetail "$prog" "Program"
+  dispdetail "$version" "Version"
+  dispdetail "$release" "Release"
+  dispdetail "$srcdir" "Source Dir"
+  dispdetail "$descfile" "DescFile"
+  createyesno "Create Tar               " $mktar
+  dispdetail "$buildarch" "BuildArch"
+  createyesno "Debian Package           " $mkdeb
+  createyesno "RPM                      " $mkrpm
+  echo -n " Spec Template            : "
   if [ -z "$spectpl" ]; then echo "${BUILDDEB}/SPECS/${prog}.tpl"
   else echo $spectpl; fi
-  echo " RPM Group                : $group"
-  echo " DEB section              : $section"
-  echo " TAR Distribution (FTP)   : $tarftp"
-  echo " TAR Distribution (SFTP)  : $tarsftp"
-  echo " TAR Distribution (SSH)   : $tarscp"
-  echo " TAR Distribution (RSync) : $tarrsync"
-  echo " DEB Distribution (FTP)   : $debftp"
-  echo " DEB Distribution (SFTP)  : $debsftp"
-  echo " DEB Distribution (SSH)   : $debscp"
-  echo " DEB Distribution (RSync) : $debrsync"
-  echo " SDEB Distribution (FTP)  : $sdebftp"
-  echo " SDEB Distribution (SFTP) : $sdebsftp"
-  echo " SDEB Distribution (SSH)  : $sdebscp"
-  echo " SDEB Distribution (RSync): $sdebrsync"
-  echo " RPM Distribution (FTP)   : $rpmftp"
-  echo " RPM Distribution (SFTP)  : $rpmsftp"
-  echo " RPM Distribution (SSH)   : $rpmscp"
-  echo " RPM Distribution (RSync) : $rpmrsync"
-  echo " SRPM Distribution (FTP)  : $srpmftp"
-  echo " SRPM Distribution (SFTP) : $srpmsftp"
-  echo " SRPM Distribution (SSH)  : $srpmscp"
-  echo " SRPM Distribution (Rsync): $srpmrsync"
-  echo " HistFile		  : $histfile"
-  echo " HistFile Distri. (FTP)   : $histftp"
-  echo " HistFile Distri. (SFTP)  : $histsftp"
-  echo " HistFile Distri. (SCP)   : $histscp"
-  echo " HistFile Distri. (Rsync) : $histrsync"
-  echo " PreRun script            : $prerun"
-  echo " PreBuild script          : $prebuild"
-  echo " PostBuild script         : $postbuild"
-  echo " PostRun script           : $postrun"
-  echo " Extra parms to pkgmake   : $pkgmakeparms"
+  dispdetail "$group" "RPM Group"
+  dispdetail "$section" "DEB section"
+  dispdetail "$tarftp" "TAR Distribution (FTP)"
+  dispdetail "$tarsftp" "TAR Distribution (sFTP)"
+  dispdetail "$tarscp" "TAR Distribution (SCP)"
+  dispdetail "$tarrsync" "TAR Distribution (RSync)"
+  dispdetail "$debftp" "DEB Distribution (FTP)"
+  dispdetail "$debsftp" "DEB Distribution (sFTP)"
+  dispdetail "$debscp" "DEB Distribution (SCP)"
+  dispdetail "$debrsync" "DEB Distribution (RSync)"
+  dispdetail "$sdebftp" "SDEB Distribution (FTP)"
+  dispdetail "$sdebsftp" "SDEB Distribution (sFTP)"
+  dispdetail "$sdebscp" "SDEB Distribution (SCP)"
+  dispdetail "$sdebrsync" "SDEB Distribution (RSync)"
+  dispdetail "$rpmftp" "RPM Distribution (FTP)"
+  dispdetail "$rpmsftp" "RPM Distribution (sFTP)"
+  dispdetail "$rpmscp" "RPM Distribution (SCP)"
+  dispdetail "$rpmrsync" "RPM Distribution (RSync)"
+  dispdetail "$srpmftp" "SRPM Distribution (FTP)"
+  dispdetail "$srpmsftp" "SRPM Distribution (sFTP)"
+  dispdetail "$srpmscp" "SRPM Distribution (SCP)"
+  dispdetail "$srpmrsync" "SRPM Distribution (RSync)"
+  dispdetail "$histfile" "HistFile"
+  dispdetail "$histftp" "HistFile Distri. (FTP)"
+  dispdetail "$histsftp" "HistFile Distri. (sFTP)"
+  dispdetail "$histscp" "HistFile Distri. (SCP)"
+  dispdetail "$histrsync" "HistFile Distri. (RSync)"
+  dispdetail "$prerun" "PreRun script"
+  dispdetail "$prebuild" "PreBuild script"
+  dispdetail "$postbuild" "PostBuild script"
+  dispdetail "$postrun" "PostRun script"
+  dispdetail "$pkgmakeparms" "Extra parms to pkgmake"
   createyesno "dryrun                   " $dryrun
   [ $yestoall -eq 0 ] && {
     echo -en "${blue}Continue (y/n)? $NC"
@@ -675,6 +690,7 @@ export PKGMAKE_USED="relman v${RELMANV}"
   [ -n "$group" ] && cmd="$cmd -g \"$group\""
   [ -n "$section" ] && cmd="$cmd -section \"$section\""
   [ -e "$ChangeLog" ] && cmd="$cmd -c $ChangeLog"
+  [ -e "$descfile" ] && cmd="$cmd -descfile $descfile"
   runcmd "$cmd"
 }
 

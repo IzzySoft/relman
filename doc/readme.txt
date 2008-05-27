@@ -112,13 +112,15 @@ please refer to the manpage of relman(8). For the config file, there is a
 manpage available for relman.conf(5).
 
 For information on the development as well as availability of new versions, you
-may want to visit the authors website, more precisely:
+may want to visit the project site, i.e.
+  http://projects.izzysoft.de/trac/relman
+or the authors website, more precisely:
   http://www.izzysoft.de/?topic=software
 or the project page on Freshmeat:
   http://freshmeat.net/projects/relman
-On the first mentioned page, you will also find more information about other
+On the second mentioned page, you will also find more information about other
 programs written by the author - as you will on Freshmeat when visiting
   http://freshmeat.net/~izzysoft/
 
 To file a bug report, feature request or simply have a look at the current
-development, please visit http://projects.izzysoft.de/?topic=trac;subject=relman
+development, please visit http://projects.izzysoft.de/trac/relman
