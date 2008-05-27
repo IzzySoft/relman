@@ -176,6 +176,15 @@ Target ([user@]server:directory) to copy the *.srpm to via SCP.
 .IP \fBsrpmrsync\fR
 Target ([user@]server:directory) to copy the *.srpm to via RSync (using SSH).
 
+.IP \fBdescaddpkginfo\fR
+(0|1) Whether to add package specifications to the distributed DescFile. These
+specifications are taken from the SpecFile template, so make sure they are
+really set there if you use this. Even if set to "1", it won't be applied if
+there is no DescFile defined (in that case, there is nothing we could apply
+it to, either). Default is "0" (do not add). Right now, the only affected
+information is Architecture and Requires - if you need more, open a ticket
+in the projects tracker ;)
+
 .IP \fBhistdate\fR
 Date format used in the histfile (if you want to use the histfile to create a
 changelog for RPM, see \fBmkchangelog\fR). Valid settings are "d.m.Y", "Y-m-d",

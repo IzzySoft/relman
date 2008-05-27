@@ -14,6 +14,9 @@ v0.1.5
   the HistView download class
 + Some more replacements for the HTML DescFile now can be defined in
   ~/.relman/<projectname>.dr (see man pages plus example relman.dr file for details)
++ package information (so far, architecture and requires) can be appended to the
+  distributed (HTML) DescFile now by setting "descaddpkginfo" to 1 in your
+  config (either globally, or per project)
 
 v0.1.4 (17.03.2008)
 -------------------

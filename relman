@@ -62,6 +62,7 @@ histscp=
 histrsync=
 histsftp=
 histsftpdir=
+descaddpkginfo=0
 
 BINDIR=${0%/*}				# where this script resides
 dispdetails=1
@@ -330,7 +331,7 @@ function getprogcfg {
     echo -e "${red}Specified DescFile ($descfile) does not exist and thus will be skipped.$NC\n"
     descfile=
   }
-  for varname in buildarch release pkgmakeparms tarftpdir tarsftpdir debftpdir debsftpdir sdebftpdir sdebsftpdir rpmftpdir rpmsftpdir srpmftpdir srpmsftpdir mktar mkdeb mkrpm histscp histrsync histftp histftpdir histfile histdate; do
+  for varname in buildarch release pkgmakeparms tarftpdir tarsftpdir debftpdir debsftpdir sdebftpdir sdebsftpdir rpmftpdir rpmsftpdir srpmftpdir srpmsftpdir mktar mkdeb mkrpm histscp histrsync histftp histftpdir histfile histdate descaddpkginfo; do
     eval ba=\$"${PRG}_${varname}"
     [ -n "$ba" ] && eval ${varname}=$ba
   done
@@ -518,6 +519,7 @@ function dispdetail() {
   dispdetail "$release" "Release"
   dispdetail "$srcdir" "Source Dir"
   dispdetail "$descfile" "DescFile"
+  [ -n "$descfile" ] && createyesno "Add PkgInfo to DescFile  " $descaddpkginfo
   createyesno "Create Tar               " $mktar
   dispdetail "$buildarch" "BuildArch"
   createyesno "Debian Package           " $mkdeb
@@ -788,6 +790,16 @@ export PKGMAKE_USED="relman v${RELMANV}"
       desc="${desc//${dline%%;*}/${dline#*;}}"
     done<$drepfile
     echo -e "$desc">$TMPFILE
+  }
+  [ $descaddpkginfo -ne 0 ] && {
+    [ -z "$spectpl" ] && spectpl="${BUILDDEB}/SPECS/${prog}.tpl"
+    pkgarch="`sed -n '/^BuildArch:/p' $spectpl`"
+    [ -n "$pkgarch" ] && {
+      pkgarch="${pkgarch/BuildArch/Architecture}"
+      echo -e "<br>\n${pkgarch/noarch/ALL}">>$TMPFILE
+    }
+    pkgarch="`sed -n '/^Requires:/p' $spectpl`"
+    [ -n "$pkgarch" ] && echo -e "<br>\n$pkgarch">>$TMPFILE
   }
   [ -n "$descscp" ] && scpxfer "DescFile" $TMPFILE $descscp
   [ -n "$descrsync" ] && rsyncxfer "DescFile" $TMPFILE $descrsync
