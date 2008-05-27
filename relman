@@ -710,7 +710,7 @@ export PKGMAKE_USED="relman v${RELMANV}"
 }
 
 #------------------------------------------------------------[ Continue??? ]---
-[ -z "${tarscp}${tarftp}${tarsftp}${tarrsync}${debftp}${debsftp}${debscp}${debrsync}${sdebftp}${sdebsftp}${sdebscp}${sdebrsync}${rpmftp}${rpmsftp}${rpmscp}${rpmrsync}${srpmftp}${srpmsftp}${srpmscp}${srpmrsync}" ] && finito
+[ -z "${tarscp}${tarftp}${tarsftp}${tarrsync}${debftp}${debsftp}${debscp}${debrsync}${sdebftp}${sdebsftp}${sdebscp}${sdebrsync}${rpmftp}${rpmsftp}${rpmscp}${rpmrsync}${srpmftp}${srpmsftp}${srpmscp}${srpmrsync}${histscp}{$histrsync}${histsftp}${descscp}${descrsync}" ] && finito
 
 [ $yestoall -eq 0 ] && {
   echo -en "${blue}* Going to distribute. Continue (y/n)?$NC "
@@ -780,6 +780,15 @@ export PKGMAKE_USED="relman v${RELMANV}"
   TMPFILE=/tmp/${prog}.desc
   sed 's/\&/\&amp\;/g' $descfile | sed 's/</\&lt\;/g' | sed -n 's/>/\&gt\;/g;p' |\
   sed 's/"/\&quot\;/g' | sed -n '1h;2,$H;${g;s/\n\n/<br>\n/g;p}' >$TMPFILE
+  [ -e "/etc/relman/${prog}.dr" ] && drepfile="/etc/relman/${prog}.dr"
+  [ -e "$HOME/.relman/${prog}.dr" ] && drepfile="$HOME/.relman/${prog}.dr"
+  [ -n "$drepfile" ] && {
+    desc=`cat "$TMPFILE"`
+    while read dline; do
+      desc="${desc//${dline%%;*}/${dline#*;}}"
+    done<$drepfile
+    echo -e "$desc">$TMPFILE
+  }
   [ -n "$descscp" ] && scpxfer "DescFile" $TMPFILE $descscp
   [ -n "$descrsync" ] && rsyncxfer "DescFile" $TMPFILE $descrsync
   rm -f $TMPFILE

@@ -5,14 +5,15 @@ History for relman
 
 v0.1.5
 -------------------
-+ added xfer via RSync
-+ added xfer via sFTP
-* initial output of configuration changed - it got to long, so now we only
-  display those variables really set
++ added xfer via RSync and sFTP
+* initial output of configuration (the "confirmation screen") changed - it got
+  to long, so now we only display those variables really set/used
 + the descfile is now passed to pkgmake (if specified)
 + optionally, the descfile can now be converted to some basic HTML code and
   be transfered via RSync or SCP to a remote server, in order to use it with
   the HistView download class
++ Some more replacements for the HTML DescFile now can be defined in
+  ~/.relman/<projectname>.dr (see man pages plus example relman.dr file for details)
 
 v0.1.4 (17.03.2008)
 -------------------

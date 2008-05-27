@@ -292,6 +292,17 @@ itself, and then looks for ~/.relman/relman.conf - if found, this is used. If it
 is not found, it looks for the /etc/relman/relman.conf and uses this file (if
 found) to overwrite the default settings.
 
+There are some additional (and optional) files if you want to use the DescFile
+with the HistView download class: In either /etc/relman/ or $HOME/.relman/ you
+may put files with replacement definitions. The filename must match the
+project name as defined in relman.conf, and have the extension ".dr" (for
+"desc replacements" (if that file exists in both locations, only the one from
+$HOME/.relman will be used). In that file you define terms and their replacements,
+one by line, separated by a semicolon. The first semicolon on the line will be the
+separator - which means, the term-to-replace cannot contain a semicolon, while
+the replacement term can.
+
+
 .SH MESSAGES AND EXIT CALLS
 relman uses the following exit codes:
 
@@ -331,6 +342,10 @@ you have to run the whole thing manually and watch the output on screen.
 /etc/relman/relman.conf
 
 ~/.relman/relman.conf
+
+/etc/relman/*.dr
+
+~/.relman/*.dr
 
 .SH "SEE ALSO"
 relman.conf(5)

@@ -18,6 +18,7 @@ man8dir=$(mandir)/man8
 
 install: installdirs
 	$(INSTALL_DATA) -c relman.conf $(DESTDIR)$(sysconfdir)
+	$(INSTALL_DATA) -c relman.dr $(DESTDIR)$(sysconfdir)
 	$(INSTALL_DATA) -c version $(DESTDIR)$(sysconfdir)
 	$(INSTALL) -c relman $(DESTDIR)$(bindir)
 	$(INSTALL_DATA) -c doc/* $(DESTDIR)$(docdir)
