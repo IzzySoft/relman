@@ -142,6 +142,8 @@ function show_help {
   printf "%24s : %-55s\n" "-dryrun" "Don't execute anything, just show what would be done."
   printf "%24s : %-55s\n" "-nodebdist" "Don't distribute the Debian package at all"
   printf "%24s : %-55s\n" "-nodeb[ftp|scp|sftp|rsync]" "Don't distribute the Debian package via FTP|SCP|SFTP|RSync"
+  printf "%24s : %-55s\n" "-nodescdist" "Don't distribute the HTMLized DescFile at all"
+  printf "%24s : %-55s\n" "-nodesc[scp|rsync]" "Don't distribute the HTMLized DescFile via SCP|RSync"
   printf "%24s : %-55s\n" "-nodist" "Don't distribute anything, just build"
   printf "%24s : %-55s\n" "-nodisthist" "Don't distribute the history file at all"
   printf "%24s : %-55s\n" "-noftp" "Don't distribute anything to the FTP targets"
@@ -190,13 +192,17 @@ while [ "$1" != "" ] ; do
     -nodebftp) _debftp=0;;
     -nodebscp) _debscp=0;;
     -nodebsftp) _debsftp=0;;
+    -nodescdist) _descscp=0; _descrsync=0;;
+    -nodescrsync) _descrsync=0;;
+    -nodescscp) _descscp=0;;
     -nodebrsync) _debrsync=0;;
     -nodist) _tarscp=0; _tarftp=0; _tarsftp=0; _tarrsync=0;
              _debftp=0; _debscp=0; _debrsync=0; _debsftp=0;
              _sdebftp=0; _sdebscp=0; _sdebrsync=0; _sdebsftp=0;
              _rpmftp=0; _rpmscp=0; _rpmrsync=0; _rpmsftp=0;
              _srpmftp=0; _srpmscp=0; _srpmrsync=0; _srpmsftp=0;
-             _histftp=0; _histscp=0; _histrsync=0; _histsftp=0
+             _histftp=0; _histscp=0; _histrsync=0; _histsftp=0;
+             _descscp=0; _descrsync=0;
              ;;
     -nodisthist) _histftp=0; _histscp=0; _histrsync=0; _histsftp=0;;
     -noftp) _tarftp=0; _debftp=0; _sdebftp=0; _rpmftp=0; _srpmftp=0; _histftp=0;;
@@ -210,14 +216,15 @@ while [ "$1" != "" ] ; do
     -norpmscp) _rpmscp=0;;
     -norpmsftp) _rpmsftp=0;;
     -norpmrsync) _rpmrsync=0;;
-    -norsync) _tarrsync=0; _debrsync=0; _sdebrsync=0; _rpmrsync=0; _srpmrsync=0;;
-    -noscp) _tarscp=0; _debscp=0; _sdebscp=0; _rpmscp=0; _srpmscp=0;;
+    -norsync) _tarrsync=0; _debrsync=0; _sdebrsync=0; _rpmrsync=0; _srpmrsync=0; _descrsync=0;;
+    -noscp) _tarscp=0; _debscp=0; _sdebscp=0; _rpmscp=0; _srpmscp=0; _descscp=0; _histscp=0;;
     -nosdebdist) _sdebftp=0; _sdebscp=0; _sdebrsync=0; _sdebsftp=0;;
     -nosdebftp) _sdebftp=0;;
     -nosdebscp) _sdebscp=0;;
     -nosdebsftp) _sdebsftp=0;;
     -nosdebrsync) _sdebrsync=0;;
     -nosftp) _tarsftp=0; _debsftp=0; _sdebsftp=0; _rpmsftp=0; _srpmsftp=0; _histsftp=0;;
+    -nosrpmdist) _srpmftp=0; _srpmscp=0; _srpmrsync=0; _srpmsftp=0;;
     -notar) _mktar=0;;
     -notardist) _tarftp=0; _tarscp=0; _tarsftp=0; _tarrsync=0;;
     -notarftp) _tarftp=0;;
@@ -329,7 +336,7 @@ function getprogcfg {
   done
   eval group=\$"${PRG}_group"
   eval section=\$"${PRG}_section"
-  for varname in tarftp tarsftp tarscp tarrsync debftp debsftp debscp debrsync sdebftp sdebsftp sdebscp sdebrsync rpmftp rpmsftp rpmscp rpmrsync srpmftp srpmsftp srpmscp srpmrsync codeget postbuild postrun prebuild prerun; do
+  for varname in descscp descrsync tarftp tarsftp tarscp tarrsync debftp debsftp debscp debrsync sdebftp sdebsftp sdebscp sdebrsync rpmftp rpmsftp rpmscp rpmrsync srpmftp srpmsftp srpmscp srpmrsync codeget postbuild postrun prebuild prerun; do
     eval ba=\$"${PRG}_${varname}"
     [ -n "$ba" ] && eval ${varname}=\"$ba\"
     [ "${!varname}" = "0" ] && eval "${varname}=\"\""
@@ -545,6 +552,8 @@ function dispdetail() {
   dispdetail "$histsftp" "HistFile Distri. (sFTP)"
   dispdetail "$histscp" "HistFile Distri. (SCP)"
   dispdetail "$histrsync" "HistFile Distri. (RSync)"
+  dispdetail "$descscp" "DescFile Distri. (SCP)"
+  dispdetail "$descrsync" "DescFile Distri (RSync)"
   dispdetail "$prerun" "PreRun script"
   dispdetail "$prebuild" "PreBuild script"
   dispdetail "$postbuild" "PostBuild script"
@@ -764,6 +773,16 @@ export PKGMAKE_USED="relman v${RELMANV}"
   }
   [ -n "$histscp" ] && scpxfer "HistFile" $histfile ${histscp}/${prog}.hist
   [ -n "$histrsync" ] && rsyncxfer "HistFile" $histfile $histrsync
+}
+
+#----------------------------------------------------------[ DescFile Dist ]---
+[ -n "$descfile" -a -n "${descscp}${descrsync}" ] && {
+  TMPFILE=/tmp/${prog}.desc
+  sed 's/\&/\&amp\;/g' $descfile | sed 's/</\&lt\;/g' | sed -n 's/>/\&gt\;/g;p' |\
+  sed 's/"/\&quot\;/g' | sed -n '1h;2,$H;${g;s/\n\n/<br>\n/g;p}' >$TMPFILE
+  [ -n "$descscp" ] && scpxfer "DescFile" $TMPFILE $descscp
+  [ -n "$descrsync" ] && rsyncxfer "DescFile" $TMPFILE $descrsync
+  rm -f $TMPFILE
 }
 
 #----------------------------------------[ Calling PostRun script (if any) ]---

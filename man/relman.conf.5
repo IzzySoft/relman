@@ -1,4 +1,4 @@
-.TH "RELMAN.CONF" "5" "09 October 2007"
+.TH "RELMAN.CONF" "5" "27 May 2008"
 .SH "NAME" 
 relman.conf \- Configuration file for \fBrelman\fR, which acts as a frontend
 to pkgmake, offering additional features like file distribution
@@ -229,6 +229,22 @@ Subversion instead.
 \fI0\fR: Nothing. Let pkgmake do the job. Note, that this also means that
 \fB*_prerun\fR and \fB*_prebuild\fR are running at the same position, and all
 changes to the "copy" (using the %b placeholder) will be overwritten by pkgmake.
+
+.IP "\fB*_descfile\fR"
+Location (/path/to/filename) of the file containing the (plain text) program
+description. This file will be passed to pkgmake with the -descfile parameter
+to be used in the specfile. Moreover, it can be modified and transfered to
+a remote server to be used with HistViews download class - see the other _desc*
+parameters.
+
+.IP "\fB*_descrsync\fR"
+[user@]server:/path as target to rsync the \fB*_descfile\fR to. Before the
+transfer is started, some modifications will be applied to the file (the original
+file will of course be left untouched) to convert it to HTML (double line feeds
+will be replaced by <br>, some html entities will be catered for).
+
+.IP "\fB*_descscp\fR"
+Same as \fB*_descrsync\fR - just that the file will be transfered using SCP.
 
 .IP "\fB*_histfile\fR"
 Location (/path/to/filename) of the history file which is useable for processing

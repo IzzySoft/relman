@@ -1,4 +1,4 @@
-.TH relman 8 "10 October 2007"
+.TH relman 8 "27 May 2008"
 .IX relman
 .SH NAME
 relman - a frontend to pkgmake with additional features, also doing the distribution
@@ -24,6 +24,9 @@ Possible options:
 .RB [ "-nodebrsync" ]
 .RB [ "-nodebscp" ]
 .RB [ "-nodebsftp" ]
+.RB [ "-nodescdist" ]
+.RB [ "-nodescrsync" ]
+.RB [ "-nodescscp" ]
 .RB [ "-nodist" ]
 .RB [ "-nohistdist" ]
 .RB [ "-nohistftp" ]
@@ -46,6 +49,7 @@ Possible options:
 .RB [ "-nosdebrsync" ]
 .RB [ "-nosdebscp" ]
 .RB [ "-nosdebsftp" ]
+.RB [ "-nosrpmdist" ]
 .RB [ "-notar" ]
 .RB [ "-notardist" ]
 .RB [ "-notarftp" ]
@@ -103,7 +107,7 @@ Instead of executing the commands, only display what \fBwould\fR be executed.
 Don't make a *.deb package (implicitly sets -nodebdist)
 
 .IP "\fB-nodebdist\fR"
-Don't distribute *.[s]deb - same as -nodebscp -nodebftp -nosdebscp -nosdebftp
+Don't distribute *.[s]deb - same as combining all other -no[s]deb* switches
 
 .IP "\fB-nodebftp\fR"
 Don't distribute *.[s]deb via FTP
@@ -117,12 +121,20 @@ Don't distribute *.[s]deb via SCP
 .IP "\fB-nodebsftp\fR"
 Don't distribute *.[s]deb via SFTP
 
+.IP "\fB-nodescrsync\fR"
+Don't distribute *.desc via RSync
+
+.IP "\fB-nodescdist\fR"
+Don't distribute *.desc - same as -nodescscp -nodescrsync
+
+.IP "\fB-nodescscp\fR"
+Don't distribute *.desc via SCP
+
 .IP "\fB-nodist\fR"
 Don't distribute anything - just create the packages and exit.
 
 .IP "\fB-noftp\fR"
-Same as combining -nodebftp -nosdebftp -norpmftp -nosrpmftp -notarftp (nothing
-gets distributed via FTP).
+Same as combining all other -no*ftp switches (nothing gets distributed via FTP).
 
 .IP "\fB-nohistdist\fR"
 Don't distribute the HistFile. Same as combining \fB-nohistftp\fR and
@@ -153,7 +165,7 @@ Don't run the configured prerun script
 Don't create *.[s]rpm - and logically don't distribute *.[s]rpm
 
 .IP "\fB-norpmdist\fR"
-Don't distribute *.rpm (same as -norpmftp -norpmftp)
+Don't distribute *.rpm (same as combining all other -norpm* switches)
 
 .IP "\fB-norpmftp\fR"
 Don't distribute *.rpm via FTP
@@ -172,7 +184,7 @@ Pendant to -noftp: Nothing gets distributed via SCP (includes -nodebscp,
 -notarscp, etc.pp.)
 
 .IP "\fB-nosdebdist\fR"
-Don't distribute *.sdeb (same as -nosdebftp -nosdebscp)
+Don't distribute *.sdeb (same as combining all other -nosdeb* switches)
 
 .IP "\fB-nosdebftp\fR"
 Don't distribute *.sdeb via FTP
@@ -191,6 +203,9 @@ Don't distribute via SCP at all (same as combining all -no*scp parameters)
 
 .IP "\fB-nosftp\fR"
 Same as combining \fB-noftp\fR - just for SFTP
+
+.IP "\fB-nosrpmdist\fR"
+Don't distribute *.srpm
 
 .IP "\fB-notar\fR"
 Don't create tarball from the sources. This means, that the source tarball
