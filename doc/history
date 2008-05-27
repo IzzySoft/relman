@@ -3,7 +3,7 @@ $Id$
 History for relman
 ==================
 
-v0.1.5
+v0.1.5 (27.05.2008)
 -------------------
 + added xfer via RSync and sFTP
 * initial output of configuration (the "confirmation screen") changed - it got
