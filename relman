@@ -333,7 +333,7 @@ function getprogcfg {
   }
   for varname in buildarch release pkgmakeparms tarftpdir tarsftpdir debftpdir debsftpdir sdebftpdir sdebsftpdir rpmftpdir rpmsftpdir srpmftpdir srpmsftpdir mktar mkdeb mkrpm histscp histrsync histftp histftpdir histfile histdate descaddpkginfo; do
     eval ba=\$"${PRG}_${varname}"
-    [ -n "$ba" ] && eval ${varname}=$ba
+    [ -n "$ba" ] && eval "${varname}=\"$ba\""
   done
   eval group=\$"${PRG}_group"
   eval section=\$"${PRG}_section"
