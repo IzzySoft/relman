@@ -501,6 +501,34 @@ done
 
 tarfile=${pkgroot}/SOURCES/${prog}-${version}.tar.gz
 
+#=================================================[ Cleanup "Dependencies" ]===
+[ $mktar -eq 0 ] && {
+  tarftp=
+  tarsftp=
+  tarscp=
+  tarrsync=
+}
+[ $mkdeb -eq 0 ] && {
+  debftp=
+  debsftp=
+  debscp=
+  debrsync=
+  sdebftp=
+  sdebscp=
+  sdebsftp=
+  sdebrsync=
+}
+[ $mkrpm -eq 0 ] && {
+  rpmftp=
+  rpmsftp=
+  rpmscp=
+  rpmrsync=
+  srpmftp=
+  srpmsftp=
+  srpmscp=
+  srpmrsync=
+}
+
 #=====================================================[ Processing Package ]===
 # Printout configuration details
 # $1: setting
@@ -687,7 +715,7 @@ fi
 
 #--------------------------------------------------------[ Calling pkgmake ]---
 export PKGMAKE_USED="relman v${RELMANV}"
-[ "${mkdeb}${mkrpm}" != "00" ] && {
+[ "${mkdeb}${mkrpm}${mktar}" != "000" ] && {
   say "${blue}* Calling pkgmake$NC"
   cmd="$pkgmake $prog $version -r $release -b $buildarch $pkgmakeparms"
   [ -n "$spectpl" ] && cmd="$cmd -t $spectpl"
@@ -756,7 +784,7 @@ export PKGMAKE_USED="relman v${RELMANV}"
   [ -n "$rpmscp" ] && scpxfer "RPM" ${rpmdir}/${rpmfile} $rpmscp
   [ -n "$rpmrsync" ] && rsyncxfer "RPM" ${rpmdir}/${rpmfile} $rpmrsync
 }
-
+  
 [ -n "${srpmscp}${srpmftp}${srpmsftp}${srpmrsync}" ] && {
   rpmdir="${pkgroot}/SRPMS"; rpmfile="${prog}-${version}-${release}.src.rpm";
   [ -n "$srpmftp" ] && ftpxfer "SRPM" $srpmftp $srpmftpdir $rpmdir $rpmfile
