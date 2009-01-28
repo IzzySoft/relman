@@ -1,4 +1,4 @@
-.TH "RELMAN.CONF" "5" "27 May 2008"
+.TH "RELMAN.CONF" "5" "28 Jan 2009"
 .SH "NAME" 
 relman.conf \- Configuration file for \fBrelman\fR, which acts as a frontend
 to pkgmake, offering additional features like file distribution
@@ -175,6 +175,10 @@ Target ([user@]server:directory) to copy the *.srpm to via SCP.
 
 .IP \fBsrpmrsync\fR
 Target ([user@]server:directory) to copy the *.srpm to via RSync (using SSH).
+
+.IP "\fBpkgbftp, pkgbftpdir, pkgbrsync, pkgbscp, pkgbsftp, pkgbsftpdir\fR"
+Configuration for the PKGBUILD file distribution. Details are similar to the
+ones discussed above.
 
 .IP \fBdescaddpkginfo\fR
 (0|1) Whether to add package specifications to the distributed DescFile. These

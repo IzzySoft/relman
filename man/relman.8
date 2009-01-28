@@ -1,4 +1,4 @@
-.TH relman 8 "27 May 2008"
+.TH relman 8 "28 Jan 2009"
 .IX relman
 .SH NAME
 relman - a frontend to pkgmake with additional features, also doing the distribution
@@ -50,6 +50,7 @@ Possible options:
 .RB [ "-nosdebscp" ]
 .RB [ "-nosdebsftp" ]
 .RB [ "-nosrpmdist" ]
+.RB [ "-nopkgb([s]ftp[dir]|rsync|scp)" ]
 .RB [ "-notar" ]
 .RB [ "-notardist" ]
 .RB [ "-notarftp" ]
@@ -226,6 +227,9 @@ Don't distribute the tarball via SCP
 
 .IP "\fB-notarsftp\fR"
 Don't distribute the tarball via SFTP
+
+.IP "\fB-nopkgb([s]ftp[dir]|rsync|scp)\fR"
+Similar commands concerning the distribution of the PKGBUILD file.
 
 .IP "\fB-p\fR \fI'pkgmake parms'\fR"
 If there's anything else you want to pass to pkgmake that is not covered by
