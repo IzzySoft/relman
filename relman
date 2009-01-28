@@ -1,8 +1,8 @@
 #!/bin/bash
 ###############################################################################
-# RelMan
-#------------------------------------------------------------------------------
-# 
+# Release Manager   (c) 2007-2009 by Itzchak Rehberg (devel AT izzysoft DOT de)
+# -----------------------------------------------------------------------------
+# A FrontEnd to (and extender of) pkgmake
 ###############################################################################
 # $Id$
 
@@ -52,6 +52,12 @@ srpmscp=
 srpmrsync=
 srpmsftp=
 srpmsftpdir=
+pkgbftp=
+pkgbftpdir=
+pkgbscp=
+pkgbrsync=
+pkgbsftp=
+pkgbsftpdir=
 prerun=
 prebuild=
 postbuild=
@@ -149,6 +155,8 @@ function show_help {
   printf "%24s : %-55s\n" "-nodisthist" "Don't distribute the history file at all"
   printf "%24s : %-55s\n" "-noftp" "Don't distribute anything to the FTP targets"
   printf "%24s : %-55s\n" "-nohist[ftp|scp|sftp|rsync]" "Don't distribute the history file via FTP|SCP|SFTP|RSync"
+  printf "%24s : %-55s\n" "-nopkgbdist" "Don't distribute the PKGBUILD file (separately)"
+  printf "%24s : %-55s\n" "-nopkgb[ftp|scp|sftp|rsync]" "Don't distribute the PKGBUILD file (separately) via FTP|SCP|SFTP|RSync"
   printf "%24s : %-55s\n" "-[no]rpm" "[Don't] create the [S]RPM package(s)"
   printf "%24s : %-55s\n" "-norpmdist" "Don't distribute the RPM package at all"
   printf "%24s : %-55s\n" "-norpm[ftp|scp|sftp|rsync]" "Don't distribute the RPM package via FTP|SCP|SFTP|RSync"
@@ -203,28 +211,33 @@ while [ "$1" != "" ] ; do
              _rpmftp=0; _rpmscp=0; _rpmrsync=0; _rpmsftp=0;
              _srpmftp=0; _srpmscp=0; _srpmrsync=0; _srpmsftp=0;
              _histftp=0; _histscp=0; _histrsync=0; _histsftp=0;
-             _descscp=0; _descrsync=0;
+             _descscp=0; _descrsync=0; _pkgbftp=0; _pkgbsftp=0;
+	     _pkgbscp=0; _pkgbrsync=0;
              ;;
     -nodisthist) _histftp=0; _histscp=0; _histrsync=0; _histsftp=0;;
-    -noftp) _tarftp=0; _debftp=0; _sdebftp=0; _rpmftp=0; _srpmftp=0; _histftp=0;;
+    -noftp) _tarftp=0; _debftp=0; _sdebftp=0; _rpmftp=0; _srpmftp=0; _histftp=0; _pkgbftp=0;;
     -nohistftp) _histftp=0;;
     -nohistscp) _histscp=0;;
     -nohistsftp) _histsftp=0;;
     -nohistrsync) _histrsync=0;;
+    -nopkgbftp) _pkgbftp=0;;
+    -nopkgbrsync) _pkgbrsync=0;;
+    -nopkgbscp) _pkgbscp=0;;
+    -nopkgbsftp) _pkgbsftp=0;;
     -norpm) _mkrpm=0; _rpmftp=0; _rpmscp=0; _rpmrsync=0; _srpmftp=0; _srpmscp=0; _srpmrsync=0;;
     -norpmdist) _rpmftp=0; _rpmscp=0; _rpmrsync=0; _rpmsftp=0;;
     -norpmftp) _rpmftp=0;;
     -norpmscp) _rpmscp=0;;
     -norpmsftp) _rpmsftp=0;;
     -norpmrsync) _rpmrsync=0;;
-    -norsync) _tarrsync=0; _debrsync=0; _sdebrsync=0; _rpmrsync=0; _srpmrsync=0; _descrsync=0;;
-    -noscp) _tarscp=0; _debscp=0; _sdebscp=0; _rpmscp=0; _srpmscp=0; _descscp=0; _histscp=0;;
+    -norsync) _tarrsync=0; _debrsync=0; _sdebrsync=0; _rpmrsync=0; _srpmrsync=0; _descrsync=0; _pkgbrsync=0;;
+    -noscp) _tarscp=0; _debscp=0; _sdebscp=0; _rpmscp=0; _srpmscp=0; _descscp=0; _histscp=0; _pkgbscp=0;;
     -nosdebdist) _sdebftp=0; _sdebscp=0; _sdebrsync=0; _sdebsftp=0;;
     -nosdebftp) _sdebftp=0;;
     -nosdebscp) _sdebscp=0;;
     -nosdebsftp) _sdebsftp=0;;
     -nosdebrsync) _sdebrsync=0;;
-    -nosftp) _tarsftp=0; _debsftp=0; _sdebsftp=0; _rpmsftp=0; _srpmsftp=0; _histsftp=0;;
+    -nosftp) _tarsftp=0; _debsftp=0; _sdebsftp=0; _rpmsftp=0; _srpmsftp=0; _histsftp=0; _pkgbsftp=0;;
     -nosrpmdist) _srpmftp=0; _srpmscp=0; _srpmrsync=0; _srpmsftp=0;;
     -notar) _mktar=0;;
     -notardist) _tarftp=0; _tarscp=0; _tarsftp=0; _tarrsync=0;;
@@ -257,7 +270,7 @@ function getopts {
   [ -n "${_mkdeb}" ] && mkdeb=${_mkdeb}
   [ -n "${_mkrpm}" ] && mkrpm=${_mkrpm}
   [ -n "${_mktar}" ] && mktar=${_mktar}
-  for varname in tarftp tarscp tarsftp tarrsync debftp debsftp debscp debrsync sdebftp sdebsftp sdebscp sdebrsync rpmftp rpmsftp rpmscp rpmrsync srpmftp srpmsftp srpmscp srpmrsync prerun prebuild postbuild postrun codeget histscp histftp histrsync histfile histdate; do
+  for varname in tarftp tarscp tarsftp tarrsync debftp debsftp debscp debrsync pkgbftp pkgbrsync pkgbscp pkgbsftp sdebftp sdebsftp sdebscp sdebrsync rpmftp rpmsftp rpmscp rpmrsync srpmftp srpmsftp srpmscp srpmrsync prerun prebuild postbuild postrun codeget histscp histftp histrsync histfile histdate; do
     eval ba=\$"_${varname}"
     [ -n "$ba" ] && eval ${varname}=$ba
     [ "${!varname}" = "0" ] && eval ${varname}=""
@@ -331,13 +344,13 @@ function getprogcfg {
     echo -e "${red}Specified DescFile ($descfile) does not exist and thus will be skipped.$NC\n"
     descfile=
   }
-  for varname in buildarch release pkgmakeparms tarftpdir tarsftpdir debftpdir debsftpdir sdebftpdir sdebsftpdir rpmftpdir rpmsftpdir srpmftpdir srpmsftpdir mktar mkdeb mkrpm histscp histrsync histftp histftpdir histfile histdate descaddpkginfo; do
+  for varname in buildarch release pkgmakeparms pkgbftpdir pkgbsftpdir tarftpdir tarsftpdir debftpdir debsftpdir sdebftpdir sdebsftpdir rpmftpdir rpmsftpdir srpmftpdir srpmsftpdir mktar mkdeb mkrpm histscp histrsync histftp histftpdir histfile histdate descaddpkginfo; do
     eval ba=\$"${PRG}_${varname}"
     [ -n "$ba" ] && eval "${varname}=\"$ba\""
   done
   eval group=\$"${PRG}_group"
   eval section=\$"${PRG}_section"
-  for varname in descscp descrsync tarftp tarsftp tarscp tarrsync debftp debsftp debscp debrsync sdebftp sdebsftp sdebscp sdebrsync rpmftp rpmsftp rpmscp rpmrsync srpmftp srpmsftp srpmscp srpmrsync codeget postbuild postrun prebuild prerun; do
+  for varname in descscp descrsync pkgbftp pkgbrsync pkgbscp pkgbsftp tarftp tarsftp tarscp tarrsync debftp debsftp debscp debrsync sdebftp sdebsftp sdebscp sdebrsync rpmftp rpmsftp rpmscp rpmrsync srpmftp srpmsftp srpmscp srpmrsync codeget postbuild postrun prebuild prerun; do
     eval ba=\$"${PRG}_${varname}"
     [ -n "$ba" ] && eval ${varname}=\"$ba\"
     [ "${!varname}" = "0" ] && eval "${varname}=\"\""
@@ -577,6 +590,10 @@ function dispdetail() {
   dispdetail "$srpmsftp" "SRPM Distribution (sFTP)"
   dispdetail "$srpmscp" "SRPM Distribution (SCP)"
   dispdetail "$srpmrsync" "SRPM Distribution (RSync)"
+  dispdetail "$pkgbftp" "PKGBUILD Distribution (FTP)"
+  dispdetail "$pkgbrsync" "PKGBUILD Distribution (RSync)"
+  dispdetail "$pkgbscp" "PKGBUILD Distribution (SCP)"
+  dispdetail "$pkgbsftp" "PKGBUILD Distribution (sFTP)"
   dispdetail "$histfile" "HistFile"
   dispdetail "$histftp" "HistFile Distri. (FTP)"
   dispdetail "$histsftp" "HistFile Distri. (sFTP)"
@@ -740,7 +757,7 @@ export PKGMAKE_USED="relman v${RELMANV}"
 }
 
 #------------------------------------------------------------[ Continue??? ]---
-[ -z "${tarscp}${tarftp}${tarsftp}${tarrsync}${debftp}${debsftp}${debscp}${debrsync}${sdebftp}${sdebsftp}${sdebscp}${sdebrsync}${rpmftp}${rpmsftp}${rpmscp}${rpmrsync}${srpmftp}${srpmsftp}${srpmscp}${srpmrsync}${histscp}{$histrsync}${histsftp}${descscp}${descrsync}" ] && finito
+[ -z "${tarscp}${tarftp}${tarsftp}${tarrsync}${pkgbftp}${pkgbrsync}${pkgbscp}${pkgbsftp}${debftp}${debsftp}${debscp}${debrsync}${sdebftp}${sdebsftp}${sdebscp}${sdebrsync}${rpmftp}${rpmsftp}${rpmscp}${rpmrsync}${srpmftp}${srpmsftp}${srpmscp}${srpmrsync}${histscp}{$histrsync}${histsftp}${descscp}${descrsync}" ] && finito
 
 [ $yestoall -eq 0 ] && {
   echo -en "${blue}* Going to distribute. Continue (y/n)?$NC "
@@ -832,6 +849,22 @@ export PKGMAKE_USED="relman v${RELMANV}"
   [ -n "$descscp" ] && scpxfer "DescFile" $TMPFILE $descscp
   [ -n "$descrsync" ] && rsyncxfer "DescFile" $TMPFILE $descrsync
   rm -f $TMPFILE
+}
+
+#----------------------------------------------------------[ PKGBUILD Dist ]---
+[ -n "${pkgbftp}${pkgbrsync}${pkgbscp}${pkgbsftp}" ] && {
+  pkgbdir=/tmp/pkgb.$$
+  runcmd "mkdir $pkgbdir"
+  runcmd "tar -C $pkgbdir -xzf ${pkgroot}/SOURCES/${prog}-${version}.tar.gz ${prog}-${version}/PKGBUILD"
+  if [ -f "${pkgbdir}/${prog}-${version}/PKGBUILD" ]; then
+    [ -n "$pkgbftp" ] && ftpxfer "PKGBUILD" $pkgbftp $pkgbftpdir "${pkgbdir}/${prog}-${version}" "PKGBUILD"
+    [ -n "$pkgbrsync" ] && rsyncxfer "PKGBUILD" "${pkgbdir}/${prog}-${version}/PKGBUILD" $pkgbrsync
+    [ -n "$pkgbscp" ] && scpxfer "PKGBUILD" "${pkgbdir}/${prog}-${version}/PKGBUILD" $pkgbscp
+    [ -n "$pkgbftp" ] && ftpxfer "PKGBUILD" $pkgbftp $pkgbftpdir "${pkgbdir}/${prog}-${version}" "PKGBUILD" "sftp"
+  else
+    say "${red}! PKGBUILD file not found, cannot distribute it.$NC"
+  fi
+  runcmd "rm -rf $pkgbdir"
 }
 
 #----------------------------------------[ Calling PostRun script (if any) ]---
