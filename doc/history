@@ -3,7 +3,7 @@ $Id$
 History for relman
 ==================
 
-v0.1.6
+v0.1.6 (02.02.2009)
 -------------------
 ! tar was not created when rpm AND deb had been switched off
 ! depending on configuration defaults, if a project was configured for tar only
