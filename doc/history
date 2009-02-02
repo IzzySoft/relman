@@ -8,7 +8,11 @@ v0.1.6
 ! tar was not created when rpm AND deb had been switched off
 ! depending on configuration defaults, if a project was configured for tar only
   relman still tried to distribute the (non-existent) RPMs and/or DEBs
-+ added possibility to distribute the PKGBUILD file
++ added possibility to distribute the PKGBUILD file. Other than the PKGBUILD
+  file included in the tarball, the distributed variant will be updated with the
+  md5sum of the tar.gz file
++ now it is possible to use the variables $PRG and $version in the config files.
+  These variables correspond with the first two parameters passed to relman
 
 v0.1.5 (27.05.2008)
 -------------------

@@ -1,4 +1,4 @@
-.TH "RELMAN.CONF" "5" "28 Jan 2009"
+.TH "RELMAN.CONF" "5" "02 Feb 2009"
 .SH "NAME" 
 relman.conf \- Configuration file for \fBrelman\fR, which acts as a frontend
 to pkgmake, offering additional features like file distribution
@@ -19,6 +19,12 @@ you should define system-wide defaults - and your personal preferences as
 e.g. your projects should be defined in your personal config file. If you are
 the only user on the system, you could of course put all configuration to
 /etc/relman/relman.conf if you prefer, since you don't hurt anyone by that.
+
+There are two variables you may use in the config files: \fI$PRG\fR and
+\fI$version\fR. They correspond to the first two parameters passed to the relman
+command. A useful example for this is to define the name of the PKGBUILD file as
+to be stored on the remote server: To have such a file for each release, you may
+want its name to be something like "PKGBUILD_${version}".
 
 .PP
 The following settings are available in relman.conf:

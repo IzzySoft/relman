@@ -182,14 +182,15 @@ function show_help {
 }
 
 #----------------------------------------------[ Read config file (if any) ]---
+# Process the first two cmdline parms first so they can be used in config
+[ "${1:0:1}" != "-" ] && PRG=$1
+[ "${2:0:1}" != "-" ] && version=$2
 [ -f /etc/relman/version ] && . /etc/relman/version
 [ -f /etc/relman/relman.conf ] && . /etc/relman/relman.conf
 [ -f ~/.relman/relman.conf ] && . ~/.relman/relman.conf
 
 #-------------------------------------------[ process command line options ]---
 typeset -i SILENT=0
-[ "${1:0:1}" != "-" ] && PRG=$1
-[ "${2:0:1}" != "-" ] && version=$2
 
 while [ "$1" != "" ] ; do
   case "$1" in
@@ -734,6 +735,10 @@ fi
 export PKGMAKE_USED="relman v${RELMANV}"
 [ "${mkdeb}${mkrpm}${mktar}" != "000" ] && {
   say "${blue}* Calling pkgmake$NC"
+  [ -n "${pkgbftp}${pkgbrsync}${pkgbscp}${pkgbsftp}" ] && {
+    PKGBUILDFILE=/tmp/PKGBUILD_${prog}.$$
+    pkgmakeparms="$pkgmakeparms -pkgbuildfile $PKGBUILDFILE"
+  }
   cmd="$pkgmake $prog $version -r $release -b $buildarch $pkgmakeparms"
   [ -n "$spectpl" ] && cmd="$cmd -t $spectpl"
   if [ -n "$codeget" ]; then
@@ -853,18 +858,17 @@ export PKGMAKE_USED="relman v${RELMANV}"
 
 #----------------------------------------------------------[ PKGBUILD Dist ]---
 [ -n "${pkgbftp}${pkgbrsync}${pkgbscp}${pkgbsftp}" ] && {
-  pkgbdir=/tmp/pkgb.$$
-  runcmd "mkdir $pkgbdir"
-  runcmd "tar -C $pkgbdir -xzf ${pkgroot}/SOURCES/${prog}-${version}.tar.gz ${prog}-${version}/PKGBUILD"
-  if [ -f "${pkgbdir}/${prog}-${version}/PKGBUILD" ]; then
-    [ -n "$pkgbftp" ] && ftpxfer "PKGBUILD" $pkgbftp $pkgbftpdir "${pkgbdir}/${prog}-${version}" "PKGBUILD"
-    [ -n "$pkgbrsync" ] && rsyncxfer "PKGBUILD" "${pkgbdir}/${prog}-${version}/PKGBUILD" $pkgbrsync
-    [ -n "$pkgbscp" ] && scpxfer "PKGBUILD" "${pkgbdir}/${prog}-${version}/PKGBUILD" $pkgbscp
-    [ -n "$pkgbftp" ] && ftpxfer "PKGBUILD" $pkgbftp $pkgbftpdir "${pkgbdir}/${prog}-${version}" "PKGBUILD" "sftp"
+  if [ -f "$PKGBUILDFILE" ]; then
+    md5=$(md5sum -b ${pkgroot}/SOURCES/${prog}-${version}.tar.gz|awk '{print $1}')
+    runcmd "sed -i 's/md5sums=()/md5sums($md5)/' $PKGBUILDFILE"
+    [ -n "$pkgbftp" ] && ftpxfer "PKGBUILD" $pkgbftp $pkgbftpdir "${PKGBUILDFILE%/*}" "${PKGBUILDFILE##*/}"
+    [ -n "$pkgbrsync" ] && rsyncxfer "PKGBUILD" "$PKGBUILDFILE" $pkgbrsync
+    [ -n "$pkgbscp" ] && scpxfer "PKGBUILD" "$PKGBUILDFILE" $pkgbscp
+    [ -n "$pkgbftp" ] && ftpxfer "PKGBUILD" $pkgbftp $pkgbftpdir "${PKGBUILDFILE%/*}" "${PKGBUILDFILE##*/}" "sftp"
   else
     say "${red}! PKGBUILD file not found, cannot distribute it.$NC"
   fi
-  runcmd "rm -rf $pkgbdir"
+  runcmd "rm -f $PKGBUILDFILE"
 }
 
 #----------------------------------------[ Calling PostRun script (if any) ]---
