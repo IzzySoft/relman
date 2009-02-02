@@ -860,7 +860,8 @@ export PKGMAKE_USED="relman v${RELMANV}"
 [ -n "${pkgbftp}${pkgbrsync}${pkgbscp}${pkgbsftp}" ] && {
   if [ -f "$PKGBUILDFILE" ]; then
     md5=$(md5sum -b ${pkgroot}/SOURCES/${prog}-${version}.tar.gz|awk '{print $1}')
-    runcmd "sed -i 's/md5sums=()/md5sums($md5)/' $PKGBUILDFILE"
+    runcmd "sed -i \"s/md5sums=()/md5sums('$md5')/\" $PKGBUILDFILE"
+    runcmd "sed -i \"/('')/d\"  $PKGBUILDFILE"
     [ -n "$pkgbftp" ] && ftpxfer "PKGBUILD" $pkgbftp $pkgbftpdir "${PKGBUILDFILE%/*}" "${PKGBUILDFILE##*/}"
     [ -n "$pkgbrsync" ] && rsyncxfer "PKGBUILD" "$PKGBUILDFILE" $pkgbrsync
     [ -n "$pkgbscp" ] && scpxfer "PKGBUILD" "$PKGBUILDFILE" $pkgbscp
